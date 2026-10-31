@@ -48,13 +48,25 @@ OpenCode al instalar su definición; no cambia el agente por defecto AIran.
 4. `npm run review:publish -- .reviews/pr-<PR>.json <ruta-externa-clave.pem>` verifica
    contexto, firma Ed25519 y publica la atestación en la PR mediante `gh` autenticado.
    Los informes son ignorados por Git; no incluir tokens en ellos.
-5. El workflow de verificación lee exclusivamente scripts y clave pública de `main`,
+5. Un job previo invalida el status anterior sin checkout; así un fallo al descargar
+   o ejecutar el verificador deja el requisito pendiente, no conserva el verde.
+   El workflow de verificación lee exclusivamente scripts y clave pública de `main`,
    sin instalar dependencias ni ejecutar código de la PR. Verifica firma, identidad
    de repo/PR, HEAD, base actual, fecha (máximo 7 días) y ausencia de bloqueos.
    Publica el status requerido `AI Review`; un texto OK sin firma no tiene valor.
-6. Nuevos commits, cambios de base, revocación/edición del informe o expiración requieren
-   otra revisión. El gate reevalúa PRs al cambiar ramas y diariamente; la protección
-   estricta de rama impide usar una CI de contexto viejo durante la reevaluación.
+6. Solo cuentan comentarios firmados publicados por la cuenta del custodio (`ralaindev`).
+   Prevalece la fecha **firmada** más reciente; a igualdad, `CHANGES_REQUIRED` gana.
+   Copiar un OK a un comentario nuevo no cambia su fecha ni lo convierte en decisión
+   del custodio. Para **revocar**, publicar un nuevo `CHANGES_REQUIRED` firmado;
+   conservar las atestaciones anteriores para el historial. Borrar comentarios no es
+   el protocolo de revocación y no sustituye esa decisión firmada.
+7. Nuevos commits, cambios de base o expiración requieren otra revisión.
+   El gate reevalúa PRs al cambiar ramas/comentarios y diariamente; la protección
+  estricta de rama impide usar una CI de contexto viejo durante la reevaluación.
+
+Si GitHub no permite ni consultar la PR ni invalidar el status, no hay confirmación
+del control: no hacer merge hasta recuperar el servicio y una reevaluación correcta.
+La falta total de disponibilidad de la API no puede resolverse con una firma local.
 
 La clave privada está fuera del workspace, en el directorio local del usuario
 `~/.config/opencode/review-keys/tareapps.pem`; solo `.github/review-public-key.pem`

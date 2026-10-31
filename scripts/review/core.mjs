@@ -46,3 +46,15 @@ export function envelopeFromComment(body) {
   if (typeof body !== 'string' || !body.startsWith(`${MARKER}\n`)) return null;
   try { return JSON.parse(body.slice(MARKER.length + 1)); } catch { return null; }
 }
+
+export function selectReport(comments, publicKey, context, now = Date.now()) {
+  // El custodio publica mediante su cuenta. Copiar una firma pública no permite
+  // a otro comentarista convertirla en una nueva decisión del custodio.
+  const owner = context.repository.split('/')[0];
+  const candidates = comments.filter(comment => comment.user?.login === owner).map(comment => ({
+    commentId: comment.id, report: verifyEnvelope(envelopeFromComment(comment.body), publicKey, context, now),
+  })).filter(item => item.report);
+  candidates.sort((a, b) => Date.parse(b.report.reviewedAt) - Date.parse(a.report.reviewedAt)
+    || Number(b.report.verdict === 'CHANGES_REQUIRED') - Number(a.report.verdict === 'CHANGES_REQUIRED'));
+  return candidates[0] ?? null;
+}

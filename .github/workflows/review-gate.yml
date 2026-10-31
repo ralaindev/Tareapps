@@ -23,8 +23,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  invalidate:
+    name: Invalidate previous review before checkout
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Clear prior OK without checking out repository code
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const repo = context.repo;
+            let numbers = [];
+            if (context.payload.pull_request) numbers = [context.payload.pull_request.number];
+            else if (context.payload.issue?.pull_request) numbers = [context.payload.issue.number];
+            else if (context.eventName !== 'issue_comment') {
+              const prs = await github.paginate(github.rest.pulls.list, { ...repo, state: 'open', per_page: 100 });
+              numbers = prs.map(pr => pr.number);
+            }
+            for (const pull_number of numbers) {
+              const { data: pr } = await github.rest.pulls.get({ ...repo, pull_number });
+              if (pr.state !== 'open' || !['main', 'develop'].includes(pr.base.ref)) continue;
+              await github.rest.repos.createCommitStatus({ ...repo, sha: pr.head.sha,
+                context: 'AI Review', state: 'pending', target_url: pr.html_url,
+                description: 'Verificador en curso; aprobación previa invalidada' });
+            }
   gate:
     name: Verify signed local review
+    needs: invalidate
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

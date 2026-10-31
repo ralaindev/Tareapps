@@ -18,9 +18,10 @@ npx --yes supabase@2.122.0 --version
 node experiments/cloud/run-local-ci.mjs
 ```
 
-El último comando es el paso de CI ejecutable. No se ha añadido ni modificado
-ningún workflow. Puede ejecutarse como un paso `run` después de checkout y de
-preparar Node 24 en un runner Ubuntu con Docker. No necesita secretos de GitHub,
+El último comando es el paso ejecutable del job `Cloud experiment` en
+`.github/workflows/ci.yml`. La primera ejecución real pasó en la PR #6:
+https://github.com/ralaindev/Tareapps/actions/runs/41202239005.
+Se ejecuta después de checkout y de preparar Node 24 en Ubuntu con Docker. No necesita secretos de GitHub,
 login Supabase, `link`, un proyecto remoto ni service keys. La primera ejecución
 descarga CLI/imágenes, por lo que requiere Internet y puede tardar varios minutos.
 Los puertos 54320–54322 deben estar libres; no ejecutar dos instancias simultáneas
