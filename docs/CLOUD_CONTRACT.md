@@ -4,13 +4,13 @@
 
 ## 1. Alcance y estados
 
-La autorización de los pasos 1–4 permite especificar, preparar datos locales y experimentar con Auth/RLS/versiones. La implementación de cuentas, selector, invitaciones y motor de sincronización en la app pertenece a entregas posteriores. En este encargo solo se escriben documentos.
+La autorización de los cuatro pasos cubre flujo de trabajo, formulario, esta especificación y experimento Auth/RLS/versiones. La migración de datos locales, cuentas, selector, invitaciones y motor de sincronización dentro de la app pertenecen a entregas posteriores. La base se integró en la PR #6; no es una entrega cloud del producto.
 
 | Área | Estado y evidencia exigida |
 | --- | --- |
 | App actual | Local/offline, sin cliente Supabase. AC37 es la mejora local del formulario, independiente de este protocolo. |
 | Contrato v1 | Base normativa para diseñar y probar; nombres lógicos, sin afirmar funciones SQL o endpoints ya creados. |
-| Experimento `supabase/` | Implementación aislada por verificar: Auth local real con signup email/contraseña y dos usuarios ficticios; snapshots para leer/reconciliar. No acredita producción. |
+| Experimento `supabase/` | Implementado y verificado en CI 41202732266 con Auth real, dos usuarios/ajeno, RLS/RPC/versiones/tombstones y snapshots. Sin invitaciones/responsables/cursor de producción. No acredita nube en la app. |
 | Producción | OTP por email como baseline propuesto; cursor incremental, retención operativa, sesión móvil e integración UI pendientes. |
 
 Las decisiones iniciales de producto están en el SDD y pueden revisarse. Este contrato concreta invariantes técnicos; un cambio incompatible deberá versionar el protocolo y definir compatibilidad/migración. `contract_version: 1` viajará en solicitudes/resultados; una versión desconocida se rechaza explícitamente, sin reinterpretarla.
