@@ -98,6 +98,20 @@ No afirmar que el bloqueo estaba activo antes de instalarlo ni repetir el bootst
 para esquivar un fallo. Cambios futuros del control deben pasar PR y revisión vigente;
 rotar la clave pública solo con autorización del custodio.
 
+### Registro del piloto #8
+
+- Sin informe, con los tres jobs de CI correctos: `AI Review: FAILURE` y merge
+  `BLOCKED`, run https://github.com/ralaindev/Tareapps/actions/runs/41203150108.
+- Firma inválida: siguió `FAILURE/BLOCKED`, run
+  https://github.com/ralaindev/Tareapps/actions/runs/41203267077.
+- Informe independiente firmado para `0e0581a` y base `99eeb73`: `SUCCESS/CLEAN`, run
+  https://github.com/ralaindev/Tareapps/actions/runs/41203312812.
+- El commit documental posterior obliga a repetir revisión; el registro de la PR #8
+  conserva el resultado de la comprobación de obsolescencia y su aprobación final.
+
+Consultar https://github.com/ralaindev/Tareapps/pull/8 para el estado final; estos
+resultados no autorizan reutilizar la firma sobre otro HEAD ni prueban un dispositivo.
+
 ## Calidad y experimento cloud
 
 Node.js 24, npm/lockfile, lint, tipos y Jest; el verificador tiene tests criptográficos
