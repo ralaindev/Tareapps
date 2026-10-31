@@ -1,6 +1,6 @@
 # En foco — Especificación de diseño de software
 
-**Lectura vigente:** las secciones iniciales y los primeros mockups describen el MVP original. Las ampliaciones posteriores incorporan Compacta, tema oscuro, cabecera mínima, borrado con Deshacer y mejoras de estabilidad; los criterios aprobados abarcan AC01–AC36. La etiqueta actual del segundo estado es **En progreso**; «En curso» se conserva en algunos textos históricos. Para retomar el proyecto, leer primero `AGENTS.md`. La evolución a nube/colaboración está propuesta en `TECH_PLAN.md`, pero todavía no hay SDD v2 aprobada.
+**Lectura vigente:** las secciones iniciales y los primeros mockups describen el MVP original. Las ampliaciones posteriores incorporan Compacta, tema oscuro, cabecera mínima, borrado con Deshacer y mejoras de estabilidad; AC01–AC36 se conservan sin cambios. La etiqueta actual del segundo estado es **En progreso**; «En curso» se conserva en algunos textos históricos. Para retomar el proyecto, leer primero `AGENTS.md`. La sección 16 incorpora la **base v2 autorizada para planificación y experimento**, revisable después, con AC37 para el formulario actual y AC38+ como objetivos futuros. Esto no acredita una aplicación cloud implementada.
 
 ## 1. Producto y alcance aprobado
 
@@ -345,3 +345,78 @@ Las pruebas automatizadas simulan los eventos de gesto y comprueban reglas y per
 | AC36 | La papelera distingue visualmente si el desplazamiento final supera el umbral, y revierte al retroceder. |
 
 El teclado, la restauración física del scroll, los tamaños ampliados y el arranque nativo requieren revisión en dispositivos. Expo Go no reproduce íntegramente el splash de una compilación final.
+
+## 16. Base v2 — cuentas opcionales y colaboración
+
+### 16.1. Autorización, alcance y estado
+
+Base autorizada por el usuario el **2026-10-31**, sin exigir decisiones previas adicionales para avanzar en los pasos **1–4** del diagnóstico de `TECH_PLAN.md`. Las decisiones siguientes son iniciales y editables mediante revisión explícita. Se distingue aprobar una dirección de producto de implementarla o verificarla.
+
+| Paso del diagnóstico | Alcance autorizado y estado de esta base |
+| --- | --- |
+| 1 — formulario/accesibilidad | Afinar el formulario local (AC37) y revisar accesibilidad/Deshacer. El código de formulario observado contiene cambios en curso; la aceptación física sigue pendiente. No se da por realizada la auditoría de Deshacer. |
+| 2 — especificación | Esta sección y [CLOUD_CONTRACT.md](docs/CLOUD_CONTRACT.md) fijan la base de producto y contratos v1 para planificación/experimento; el plan técnico se mantiene en `TECH_PLAN.md`. |
+| 3 — datos locales | Autoriza preparar migración desde SQLite v2, tableros y pruebas de conservación/importación/aislamiento. Esta documentación no declara esa migración implementada. |
+| 4 — experimento | Auth/RLS y mutaciones versionadas en Supabase **local**, aislado en `supabase/`, con dos usuarios de prueba y snapshots. Sin integrar un cliente Supabase en la app. Su implementación y evidencia deben registrarse separadamente. |
+
+El paso 0 (flujo GitHub) y los pasos 5–7 (integración de colaboración en la app y evolución funcional) no quedan ejecutados ni autorizados implícitamente por esta base. Las cuentas, invitaciones y sincronización de producción son objetivos posteriores; no hay autorización aquí para remotos, despliegues, commits ni recursos con coste. Este encargo documental solo modifica el SDD y crea el contrato.
+
+### 16.2. Decisiones iniciales de producto
+
+1. **Local sin cuenta:** conservar todas las operaciones locales/offline aprobadas. La cuenta es opcional para usar nube. Iniciar sesión no importa ni atribuye automáticamente las tareas anónimas.
+2. **Identidad:** OTP por correo es el baseline propuesto para producción; recuperación, entrega de correo, sesión y enlaces móviles requieren validación antes de integrarlo. El experimento usa signup con email/contraseña exclusivamente en Auth local y datos ficticios; no fija contraseña como método de producción.
+3. **Tableros:** un espacio local y, al activar nube, tableros personales y compartidos. El tablero personal de cuenta tiene solo su owner; compartir es una conversión explícita a compartido, no una filtración de su contenido. Cada tarea pertenece a un único tablero.
+4. **Roles:** `owner` administra tablero, invitaciones y miembros; `member` consulta y modifica tareas del tablero. Un único owner activo por tablero, también presente en membership. No se puede autoascender, retirar al último owner ni transferir propiedad mediante una edición ordinaria; transferencia y cierre quedan fuera de la primera implementación.
+5. **Responsable:** como máximo uno, opcional, y miembro activo del mismo tablero. Dejar de ser miembro retira su asignación de forma atómica y versionada; no borra las tareas ni elimina su autoría histórica.
+6. **Invitaciones:** enlace con token aleatorio de alta entropía; almacenar solo hash en servidor, TTL inicial de 7 días, uso único y aceptación autenticada. El owner puede revocarlo. Si se vincula a email, el servidor comprueba el correo verificado del destinatario; el enlace no expone el directorio de correos. El token bruto no se registra ni se incluye en snapshots compartidos.
+7. **Permisos:** autorización real por membership activa en servidor y RLS, para lecturas y escrituras. La UI no concede permisos. Revocación bloquea operaciones remotas y oculta la caché cuando el cliente la detecta; no se promete retirar datos ya vistos/copiados ni borrado remoto instantáneo de un dispositivo offline.
+8. **Conflictos:** versión autoritativa del servidor, comparación por igualdad y resolución explícita. Nunca aplicar last-write-wins silencioso, ni el reloj del móvil como arbitraje. Ante conflicto se conserva el trabajo local y se puede descartar o preparar una nueva operación contra la versión actual.
+9. **Migración/importación:** migrar SQLite v2 sin borrar datos, conservando identidad, texto, estado, fechas y orden. «Guardar mis tareas en mi cuenta» es voluntario, con destino/vista previa/conteo y una identidad de importación estable para no duplicar al reintentar. La copia local se conserva; eliminarla sería otra acción explícita. Memoria, caché, outbox y recuperación quedan aisladas por cuenta/tablero.
+10. **Deshacer/Rehacer:** conservar una sola oportunidad de Deshacer, 6 s y sin caducidad temporal con lector, con cierre accesible e invalidación por cambios posteriores; no sobrevive al cierre del proceso. En nube, revertir es una compensación versionada, nunca reescribir el pasado o restaurar a ciegas. Rehacer, si se incorpora después, también exige nueva operación/versión; no se añade ahora un control ni una pila de Rehacer.
+
+### 16.3. Interfaz y referencias de diseño
+
+El **título del tablero será el selector**; su hoja mostrará local/personal/compartidos, selección actual y accesos secundarios a cuenta/miembros. Cambiar de tablero o cuenta protege un borrador sin guardar. Se mantienen botones de vista/tema, Detallada con descripción y acción rápida, Compacta de solo título y **«＋ Nueva tarea» textual en el pie**, sin botón flotante.
+
+Responsable se editará en formulario y aparecerá como metadato breve en Detallada. Los estados de red serán contextuales y veraces: guardado local, pendiente, sincronizando, conflicto o error; no mostrar «sincronizado» sin confirmación. No convertir cada tarjeta en un panel de indicadores ni solapar estos mensajes con Deshacer.
+
+Referencias sin duplicar las maquetas existentes:
+- Secciones 4.2/4.3 de este SDD: jerarquía de campos; secciones 12/15: cabecera y guardado fijo vigentes.
+- `TECH_PLAN.md`, diagnóstico, **Boceto A — formulario afinado, sin nube**: base de AC37.
+- Mismo diagnóstico, **Boceto B — tablero compartido futuro**: referencia ASCII conceptual para selector, responsable y pie. No es diseño medido ni evidencia física; antes de integrar el paso 5 se validarán avisos, nombres largos, temas, lector, movimiento reducido y texto ampliado.
+
+### 16.4. AC37 — formulario local, implementación actual
+
+| ID | Resultado observable | Estado de implementación/verificación |
+| --- | --- | --- |
+| AC37 | Alta y edición identifican el título como obligatorio, mantienen 1–120 caracteres tras `trim` y muestran contador de descripción `longitud/2000`. Abrir vacío muestra ayuda sin error rojo. Al perder foco (`blur`), un título vacío/espacios muestra error junto al campo; corregirlo retira el error. Contadores no anuncian cada carácter. Valores inválidos bloquean Guardar; no se persiste al escribir. Fallos de guardado conservan borrador y error junto a la barra fija. | Cambio local actual, observable en `TaskForm.tsx` al redactar; no equivale a validación cloud. Tests de formulario, lint/tipos y revisión física deben tener evidencia propia; esta sección no declara su ejecución ni cierre en dispositivo. |
+
+AC37 precisa la interacción del formulario sin sustituir AC03, AC11, AC12 ni AC33. No depende de Auth ni de red.
+
+### 16.5. AC38+ — criterios objetivo futuros
+
+Todos los criterios siguientes son **objetivos de la base v2, pendientes de implementación/verificación de extremo a extremo en la app**. Una prueba del experimento solo acredita la parte que ejecuta; no convierte la tabla entera en implementada.
+
+| ID | Resultado observable objetivo |
+| --- | --- |
+| AC38 | Sin cuenta se conserva CRUD offline y SQLite; crear una cuenta/iniciar sesión no sube las tareas locales sin consentimiento. |
+| AC39 | Cuenta opcional habilita personal/compartidos; el selector en el título cambia de tablero sin mezclar datos ni perder borradores y conserva «＋ Nueva tarea» textual en el pie. |
+| AC40 | Owner administra miembros e invitaciones; member modifica tareas sin administrar permisos. Anónimo, ajeno y revocado no pueden leer ni mutar el tablero por API directa ni reutilizando operaciones anteriores. |
+| AC41 | Cada tarea tiene cero o un responsable activo del mismo tablero; asignación externa se rechaza y retirar un miembro elimina su asignación con nueva versión. |
+| AC42 | Una invitación autenticada comprueba hash, TTL, uso único, revocación y destinatario si procede. Aceptaciones simultáneas no consumen el enlace más de una vez ni elevan rol. |
+| AC43 | Migrar desde SQLite v2 conserva datos/IDs/fechas/orden; un fallo hace rollback y permite reintentar. Importación voluntaria repetida no duplica ni mezcla cuentas. |
+| AC44 | Mutación local y outbox se confirman atómicamente antes de actualizar memoria; guardar no espera red. Cambiar/cerrar sesión detiene envíos de esa cuenta y no reutiliza operaciones bajo otra identidad. |
+| AC45 | Repetir la misma operación tras timeout devuelve el mismo resultado autorizado sin duplicar efectos; `expected_version` obsoleta produce conflicto visible sin sobrescritura silenciosa y conserva el trabajo local. |
+| AC46 | Borrado se propaga mediante tombstone; Deshacer es compensación contra la versión correspondiente, conserva posición si sigue siendo válida y rechaza cambios ajenos/revocación. Mantiene 6 s o sin caducidad con lector; Rehacer no está implementado por este criterio. |
+| AC47 | La recuperación de producción no pierde commits/borrados concurrentes: página y cursor se confirman juntos; cursor caducado exige rehidratar preservando pendientes. El snapshot del experimento no demuestra este criterio. |
+| AC48 | La app diferencia confirmación local/remota, pendientes, conflicto y rechazo; sesión caducada permite reautenticar la misma cuenta sin enviar con otra. La revocación se aplica al detectarse y no promete retirar remotamente copias offline. |
+
+### 16.6. Condición de terminado y registro de evidencia
+
+- **Documentación base:** decisiones iniciales, límites, criterios y contratos enlazados; editable después con trazabilidad de cambios. No se presenta como entrega cloud.
+- **Paso 1:** lint, tipos y tests significativos de formulario. La revisión de teclado, texto ampliado, lector, scroll y Deshacer en iOS/Android se registra por separado con entorno/fecha/resultado; queda pendiente si no se ejecutó.
+- **Paso 3:** SQL real para migración desde snapshots v2, rollback, reintento/importación idempotente y aislamiento entre cuentas; dobles de repositorio no bastan para demostrar migración.
+- **Paso 4:** pruebas reproducibles contra Supabase local real con Auth y dos usuarios, RLS/grants y RPC reales, permitidos y denegados, versiones, duplicados, conflictos y revocación; evidencia del comando, entorno y resultado. CI debe ejecutar ese entorno real para acreditar permisos/Auth, no solo dobles o claims JWT inventadas. Si únicamente corre local o con dobles, indicarlo expresamente y dejar la integración CI pendiente.
+- **Producción futura:** AC38+ se cierra por entregas con evidencia servidor/cliente y validación en dispositivos cuando corresponda. Ni tests unitarios, ni un run CI de la app local, ni exportar JavaScript acreditan nube integrada o dispositivos.
+
+El detalle normativo del protocolo futuro v1, alcance reducido del experimento y pendientes de producción está en [docs/CLOUD_CONTRACT.md](docs/CLOUD_CONTRACT.md).

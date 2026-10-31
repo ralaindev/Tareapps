@@ -39,7 +39,11 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:review": "node --test scripts/review/core.test.mjs",
+    "test:cloud": "node experiments/cloud/run-local-ci.mjs",
+    "review:prepare": "node scripts/review/prepare.mjs",
+    "review:publish": "node scripts/review/publish.mjs"
   },
   "private": true
 }

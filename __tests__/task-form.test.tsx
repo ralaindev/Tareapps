@@ -61,6 +61,55 @@ afterEach(async () => {
 });
 
 describe('TaskForm', () => {
+  it('explains the required title without showing an error on opening or while first typing', async () => {
+    await render(<TaskForm />);
+    expect(screen.getByText('Título · obligatorio')).toBeTruthy();
+    expect(screen.getByText('Obligatorio: entre 1 y 120 caracteres, sin contar los espacios al principio y al final.')).toBeTruthy();
+    expect(screen.getByLabelText('Título')).toHaveProp('maxLength', 120);
+    expect(screen.getByLabelText('Descripción opcional')).toHaveProp('maxLength', 2000);
+    expect(screen.queryByRole('alert')).toBeNull();
+    await fireEvent.changeText(screen.getByLabelText('Título'), '  ');
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(mockTasks.create).not.toHaveBeenCalled();
+  });
+
+  it('validates whitespace on blur, clears the error when corrected and validates again on the next blur', async () => {
+    await render(<TaskForm />);
+    const title = screen.getByLabelText('Título');
+    await fireEvent.changeText(title, '  \n\t ');
+    await fireEvent(title, 'blur');
+    expect(within(screen.getByTestId('task-form-fields')).getByRole('alert')).toHaveTextContent('El título debe tener entre 1 y 120 caracteres.');
+    expect(within(screen.getByTestId('task-form-save-bar')).queryByRole('alert')).toBeNull();
+    await fireEvent.changeText(title, '   ');
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Crear tarea' })).toBeDisabled();
+    await fireEvent.changeText(title, '  A  ');
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByText('1/120')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Crear tarea' })).toBeEnabled();
+    await fireEvent.changeText(title, '');
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Crear tarea' })).toBeDisabled();
+    await fireEvent(title, 'blur');
+    expect(screen.getByRole('alert')).toHaveTextContent('El título debe tener entre 1 y 120 caracteres.');
+    expect(mockTasks.create).not.toHaveBeenCalled();
+    expect(router.dismissTo).not.toHaveBeenCalled();
+  });
+
+  it('updates the description counter through edits, the limit and clearing without saving', async () => {
+    await render(<TaskForm />);
+    const description = screen.getByLabelText('Descripción opcional');
+    expect(screen.getByText('0/2000')).toBeTruthy();
+    await fireEvent.changeText(description, 'Un detalle\n');
+    expect(screen.getByText('11/2000')).toHaveProp('accessibilityLiveRegion', 'none');
+    await fireEvent.changeText(description, 'a'.repeat(2000));
+    expect(screen.getByText('2000/2000')).toBeTruthy();
+    await fireEvent.changeText(description, '');
+    expect(screen.getByText('0/2000')).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(mockTasks.create).not.toHaveBeenCalled();
+  });
+
   it('keeps saving outside the scrolling fields and deletion separate from the primary action', async () => {
     await render(<TaskForm task={original} />);
     const fields = screen.getByTestId('task-form-fields');
@@ -98,6 +147,12 @@ describe('TaskForm', () => {
     expect(preventionEnabled).toBe(true);
     expect(disablePrevention).not.toHaveBeenCalled();
     expect(router.dismissTo).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByRole('button', { name: 'Crear tarea' }));
+    expect(mockTasks.create).toHaveBeenCalledTimes(2);
+    expect(mockTasks.create).toHaveBeenLastCalledWith({
+      title: '  Una idea  ', description: 'Detalles\npara mañana', status: 'pending',
+    });
+    expect(router.dismissTo).toHaveBeenCalledWith('/');
   });
 
   it('creates in pending and navigates only after persistence succeeds', async () => {

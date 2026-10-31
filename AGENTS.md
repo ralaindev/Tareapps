@@ -26,6 +26,7 @@
 
 - `SDD.md`: comportamiento aprobado y criterios **AC01–AC36**. Los primeros mockups son históricos; las ampliaciones posteriores precisan la interfaz actual.
 - `TECH_PLAN.md`: arquitectura implementada, verificaciones y **sección «Continuación: GitHub y nube»** con trabajo pendiente.
+- `TECH_PLAN.md`, sección **«Diagnóstico y propuestas de evolución — 2026-10-31»**: análisis de código solicitado tras la migración, propuestas `PROP-*` de UX, SQLite/Supabase, sincronización, seguridad y entregas paralelizables. Incluye bocetos conceptuales, evidencia y decisiones pendientes. No es SDD v2 aprobada ni autorización para implementar esas mejoras; no confundir los IDs de propuestas con AC01–AC36.
 - `README.md`: instalación, comandos, resultados y checklist manual.
 - No renumerar ni cambiar silenciosamente el significado de los criterios existentes. No crear documentos de traspaso duplicados para cada sesión.
 

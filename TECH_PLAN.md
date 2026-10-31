@@ -2,6 +2,33 @@
 
 ## Continuación: GitHub y nube
 
+### Base de trabajo autorizada — pasos 1–4
+
+El usuario autorizó ejecutar la primera base completa y tomar decisiones iniciales
+revisables sin esperar respuesta. Esto supersede el estado «solo propuestas» para
+el alcance siguiente, no para todo el roadmap:
+
+1. Project privado https://github.com/users/ralaindev/projects/1, issue padre #1 y
+   sub-issues #2–#5; ramas desde `develop`, plantillas y controles de contribución.
+   `docs/DEVELOPMENT.md` define revisión local firmada, fuente confiable y límites.
+2. Formulario con ayuda obligatoria, validación tras blur y contador de descripción;
+   tests de interacción. No se rediseñan tarjetas/gestos ni se afirma prueba física.
+3. SDD v2 inicial en la sección 16 de `SDD.md` y contrato v1 en
+   `docs/CLOUD_CONTRACT.md`. AC37 corresponde al formulario; AC38–AC48 son objetivos
+   de nube, no una declaración de que la app ya los cumple.
+4. Experimento separado `supabase/` + `experiments/cloud/`: Auth, Postgres/RLS y RPC
+   versionadas con dos usuarios y ajeno, reintentos/conflictos/borrados/revocación.
+   No requiere SDK Supabase en la app ni modifica su SQLite v2.
+
+El bootstrap instala la primera PR en `main` antes de activar la protección, revisada
+independientemente; después se alinea `develop`, se activan reglas y se prueba una PR
+piloto. Registrar la evidencia efectiva al terminar, sin presentar configuración como
+bloqueo probado. Docker no está disponible en el equipo Windows; la integración real
+se ejecutará en Ubuntu/Docker de CI. Sin recursos cloud remotos, tiendas ni costes.
+
+Los párrafos históricos siguientes conservan el diagnóstico previo. Para estado vigente,
+consultar esta sección, `docs/DEVELOPMENT.md` y los resultados enlazados de las PRs.
+
 **Estado:** la aplicación local está implementada; la siguiente ampliación es un roadmap discutido, no una SDD v2 aprobada. Leer `AGENTS.md` para el contexto breve y verificar el estado real de Git antes de actuar.
 
 ### Estado de GitHub y pasos pendientes
@@ -52,6 +79,208 @@ Pendiente decidir: si se conservan tableros privados, cómo se aceptan invitacio
 - [ ] Validar con dos usuarios y dos dispositivos, desconexiones/reconexiones, revocación de acceso y operaciones concurrentes.
 
 Este roadmap no constituye permiso para crear recursos, efectuar despliegues o ampliar el alcance sin la petición correspondiente.
+
+## Diagnóstico y propuestas de evolución — 2026-10-31
+
+**Estado: análisis solicitado y propuestas, no aprobación para implementarlas.** Se amplía este documento porque ya describe la arquitectura y el roadmap; `SDD.md` sigue siendo la fuente del producto aprobado. No se cambian AC01–AC36 ni se presentan criterios nuevos como aceptados. Los identificadores `PROP-*` siguientes identifican propuestas, no criterios del SDD ni issues ya creadas.
+
+### Base analizada y límites de la evidencia
+
+- Revisión del código de tablero, tarjetas, formulario, temas, repositorios, proveedor, modelo y migraciones, contrastada con SDD, README y tests. Base de aplicación: historial corregido `f74ea78`; `a0916c9` documenta la migración pública y no cambia el código de la app.
+- Evidencia automatizada: lint/tipos locales correctos y CI real correcta sobre `a0916c9`: https://github.com/ralaindev/Tareapps/actions/runs/41199927421. La suite del proyecto consta de 78 tests en 7 suites. No se ha realizado una nueva compilación nativa, exportación ni prueba física para este diagnóstico.
+- No se han verificado proyecto, región, plan, credenciales ni conexión real de Supabase, Vercel o Expo/EAS. Consultar documentación no acredita una integración ni autoriza crear recursos.
+- Los bocetos de abajo son textuales y conceptuales: no son capturas ni diseños probados en iPhone/Android. La inspección de código identifica riesgos, no demuestra cómo se comportan físicamente los gestos o el teclado.
+
+### Estado actual: conservar la base, no reescribirla
+
+| Área | Evidencia actual | Consecuencia para evolucionar |
+| --- | --- | --- |
+| Experiencia local | Detallada/Compacta, tema persistido, alta/edición, gestos y Deshacer implementados. | Conservar el uso sin cuenta y offline como recomendación; cuentas opcionales requieren acuerdo en v2. |
+| Escrituras | [repository.ts](src/features/tasks/repository.ts) confirma SQLite antes de devolver; SQL parametrizado y control de versión local. | Mantener confirmación local antes de actualizar la UI; guardar también la operación de sincronización en la misma transacción. |
+| Serialización | [queue.ts](src/storage/queue.ts) comparte cola entre repositorios; [TasksProvider](src/features/tasks/TasksProvider.tsx) usa un bloqueo global de comandos. | No sustituir la cola por peticiones concurrentes; un bloqueo global no debe mantenerse durante la espera de red. |
+| Modelo | [model.ts](src/features/tasks/model.ts): UUID, texto, estado y marcas temporales; sin cuenta, tablero ni responsable. | UUID reutilizable; añadir pertenencia y versión remota exige migración y contratos, no solo nuevos componentes. |
+| Persistencia | [migrations.ts](src/storage/migrations.ts): esquema v2 con `tasks` y `preferences`; carga todas las tareas. | Versionar el siguiente esquema, separar datos por cuenta/tablero y consultar el tablero activo sin mezclar usuarios. |
+| Conflictos | `updatedAt` monotónico se obtiene del reloj y máximo local; se usa en actualizaciones y Deshacer. | Sirve como protección local, no como reloj global ni árbitro entre teléfonos. |
+| Borrado | Eliminación física y restauración mediante INSERT de un snapshot. | Antes de sincronizar, diseñar tombstones, retención y compensación para no resucitar borrados ni sobrescribir cambios ajenos. |
+| Entrega | CI pública con instalación/lint/tipos/tests; sin `develop`, Project ni revisor obligatorio configurados. | Terminar el flujo de trabajo antes de abrir varias implementaciones en paralelo. |
+
+### Propuestas visuales y de usabilidad
+
+| ID / prioridad | Hallazgo o necesidad | Propuesta | Comprobación de salida propuesta |
+| --- | --- | --- | --- |
+| PROP-UX01 / alta | [TaskForm](src/components/TaskForm.tsx) muestra contador solo de título; el botón puede estar deshabilitado sin explicación junto al campo. El SDD ya pide contadores y errores contextualizados. | Marcar título obligatorio, contador de descripción y validación contextual tras interacción; reservar el error fijo para fallos de guardado. Sin anuncios por cada carácter. | Título vacío/espacios, límites, pegado, borrador conservado, lector y teclado; no persistir al escribir. |
+| PROP-UX02 / alta | [TaskCard](src/components/TaskCard.tsx) trunca título y descripción a dos líneas incluso en Detallada. | Comparar título adaptable en Detallada frente al límite actual; descripción resumida y Compacta de solo título. No reducir áreas táctiles para ganar densidad. | Maqueta en pantalla estrecha/texto ampliado y revisión física antes de aprobar el cambio visual. |
+| PROP-UX03 / alta | [index.tsx](src/app/index.tsx) reserva `88 × fontScale` para Deshacer, cuyo contenido puede envolver en varias filas. No hay evidencia física de una oclusión. | Medir la altura efectiva del aviso y ajustar la reserva de las listas si la validación confirma el riesgo; no mover el pie. Revisar también foco útil al regresar. | Última tarjeta y controles alcanzables con aviso, texto grande, lector y ambas vistas en iOS/Android. |
+| PROP-UX04 / media | [EmptyColumn](src/components/EmptyColumn.tsx) considera primera utilización cualquier tablero sin tareas; los textos de validación aún mezclan nombres históricos. | Vacío neutral sin fingir que es primera apertura; vocabulario actual consistente. Ayuda de gestos contextual y descartable solo si las pruebas muestran que es necesaria. | Vacío inicial y tras borrar todo; no añadir texto fijo redundante ni cambiar dirección/umbral del gesto. |
+| PROP-UX05 / v2 | Futuros tableros, miembros y estado de red competirían por una cabecera mínima. | Título como selector de tablero; cuenta/miembros en su hoja secundaria. Responsable solo en formulario y metadato breve en Detallada; Compacta mantiene solo título inicialmente. | Mockup claro/oscuro con nombres largos, texto ampliado, selección accesible y borrador protegido al cambiar de tablero. |
+| PROP-UX06 / v2 | La app actual guarda solo en el dispositivo. | Al implementar nube, distinguir guardado local, pendiente, sincronizando, error y conflicto; no mostrar ahora un estado «sincronizado» inexistente. Un aviso contextual por tablero, no insignias en todas las tarjetas. | Pruebas de red y persistencia demuestran cada mensaje; no se confunde sincronización con Deshacer ni se bloquea CRUD local. |
+
+Invariantes: **«＋ Nueva tarea» con texto en el pie**, sin FAB; tres estados con códigos actuales; temas claro/oscuro, movimiento reducido y controles de al menos 48 × 48. No renombrar En foco. Mantener el orden por entrada en columna y que editar texto no reordene. No convertir las dos vistas en variantes casi idénticas.
+
+**Boceto A — formulario afinado, sin nube (conceptual)**
+
+```text
+Cancelar                 Nueva tarea
+
+Título · obligatorio
+[ ¿Qué quieres hacer?              ]
+                           0 / 120
+Descripción · opcional
+[ Añade algún detalle…             ]
+                          0 / 2000
+Se añadirá a Pendiente
+
+───────────────────────────────────
+[          Crear tarea            ]  ← barra fija, fuera del scroll
+```
+
+No mostrar un error rojo al abrir el formulario vacío: explicar el requisito y validar tras interacción. El contador visual no debe generar avisos de lector en cada pulsación.
+
+**Boceto B — tablero compartido futuro (conceptual, no implementado)**
+
+```text
+Casa compartida ▾        [vista] [tema]
+Pendiente 3 | En progreso 1 | Hecho 8
+
+┌───────────────────────────────────┐
+│ Comprar productos de limpieza     │
+│ Detalle opcional…                 │
+│ Responsable: Ana                  │
+│                       Empezar →   │
+└───────────────────────────────────┘
+
+Sin conexión · guardado aquí         ← solo cuando proceda
+[ Tarea movida · Deshacer · × ]       ← aviso independiente, flotante
+─────────────────────────────────────
+[          ＋ Nueva tarea           ]
+```
+
+La ubicación de ambos avisos requiere una maqueta con medidas para evitar solapamiento; no fijar el diseño final con este ASCII. En estado normal no añadir una fila permanente de «todo correcto». La hoja del selector contendría tablero personal/compartidos, selección actual y accesos secundarios a miembros/cuenta. El filtro «Mías» se propone después de validar volumen y necesidad, no junto a todos los controles iniciales.
+
+### Propuesta de nube: SQLite local + Supabase, no conexión directa a Postgres
+
+**PROP-CLOUD01 / prioridad alta, pendiente de SDD v2.** Objetivo recomendado para la primera entrega: conservar tareas locales, permitir cuenta, guardar en nube y compartir un tablero con asignación manual. Fuera inicialmente: chat, adjuntos, rotación automática, calendario complejo y web completa.
+
+```text
+UI y comandos de dominio
+          ↓
+SQLite: tareas + cola durable de operaciones, en una transacción
+          ↓                         ↑
+motor de sincronización     reconciliación / recuperación
+          ↓                         ↑
+Supabase Auth + API/RPC + Postgres con permisos y RLS
+          ↑
+Realtime: señal para volver a consultar, no fuente única de verdad
+```
+
+No enviar credenciales de conexión Postgres al móvil. Utilizar SDK/API autenticada, clave publicable y políticas servidor; nunca `service_role`/claves secretas en la app, repositorio o variables `EXPO_PUBLIC_*`. Las variables públicas terminan dentro del bundle: no son un almacén de secretos.
+
+**Modelo conceptual mínimo — no es todavía un esquema SQL aprobado:**
+
+| Entidad | Responsabilidad y restricciones a concretar |
+| --- | --- |
+| `profiles` | Identidad pública mínima asociada a Auth; no exponer correos de otros usuarios sin necesidad. |
+| `boards` | Tablero personal/compartido, propietario y metadatos. Definir transferencia de propiedad y cierre del tablero. |
+| `board_members` | Relación usuario/tablero y permisos. Propuesta inicial: propietario y miembro, sin jerarquías innecesarias. No permitir autoascenso ni alta unilateral. |
+| `tasks` | Conservar UUID y texto/estado; añadir `board_id`, autor, responsable opcional, versión servidor y borrado lógico. Asignar solo a miembros activos del mismo tablero. |
+| `invitations` | Alta y aceptación controladas en servidor, token almacenado como hash, caducidad y uso único. Aceptación autenticada y comprobación del destinatario si se invita por correo. |
+| Registro de operaciones/cambios | Deduplificación por `operation_id`, versiones y feed paginado para recuperar cambios y borrados tras desconexiones. Retención explícita, no historial infinito. |
+
+Los permisos deben cubrir lectura y escritura por operación, no solo ocultar pantallas. Evitar políticas RLS recursivas entre tableros y miembros; cualquier función privilegiada se revisa con permisos mínimos y `search_path` seguro. La clave publicable no sustituye RLS ni grants. Probar anónimo, miembro, propietario, ajeno y miembro revocado, incluyendo intentos de cambiar `board_id`, asignar otro usuario o elevar rol.
+
+**PROP-CLOUD02 / sincronización — contrato que debe cerrarse antes del código:**
+
+1. Cada escritura local guarda tarea y operación durable de forma atómica, antes de modificar memoria. Guardar en el teléfono no espera a Internet. La red nunca se espera dentro de la cola/transacción SQLite.
+2. Enviar operaciones con identidad única y versión base esperada; el servidor valida sesión/pertenencia, aplica la mutación y registra deduplicación en una transacción. Repetir tras un timeout no crea otra tarea ni otro movimiento.
+3. Propuesta conservadora de conflictos: actualización condicional sobre una versión servidor, con rechazo explícito si cambió. Mantener el borrador/operación local y ofrecer resolución; no aplicar «último reloj del móvil gana» ni fusión automática de textos. Validar esta UX antes de aprobarla.
+4. Descargar cambios con un cursor/orden estable diseñado para no perder commits concurrentes; no usar solo `updatedAt > últimoValor`. Recuperar también tombstones. El cursor se confirma junto con la aplicación local de la página; si caduca, rehidratar sin perder operaciones pendientes.
+5. Reintentos con backoff y límites; activar al recuperar sesión/red o volver al primer plano. Realtime solo acelera consultas; tras reconexión hay recuperación completa de los cambios pendientes. No prometer ejecución continua en segundo plano móvil.
+6. El servidor devuelve orden/versión autoritativos; separar esos valores del estado pendiente local y definir cómo reconciliar `columnEnteredAt` sin reordenar por una simple edición de texto.
+7. Deshacer se convierte en operación compensatoria condicionada a la versión esperada. Si ya hay cambios ajenos o se revocó acceso, no sobrescribir ni restaurar a ciegas. Mantener una sola oportunidad y las reglas accesibles de duración existentes, salvo ampliación aprobada explícitamente.
+
+**PROP-CLOUD03 / migración y privacidad local:**
+
+- Migrar desde esquema v2 sin borrar tablas para resolver errores: introducir un tablero local y asignar las tareas existentes preservando IDs, texto y orden. Probar datos vacíos, grandes y fallo/rollback de cada migración.
+- Proponer acceso sin cuenta y un flujo voluntario «Guardar mis tareas en mi cuenta», con vista previa y conteo. Reintentar la misma importación no duplica. No atribuir datos locales automáticamente a la primera cuenta que inicie sesión.
+- Separar estado en memoria, caché SQLite, outbox y cursores por cuenta/tablero; no reutilizar una cola de envíos de la cuenta A bajo la sesión B. Guardar tokens con un adaptador de persistencia elegido y validado para móvil; el ejemplo de autenticación no resuelve por sí mismo la seguridad de la sesión.
+- Cerrar sesión detiene envíos/suscripciones y elimina el acceso a la caché de esa cuenta según política aprobada, sin mezclarla con tareas locales anónimas. Si hay cambios pendientes, explicar el riesgo y ofrecer una salida segura; nunca afirmar que están en nube si no hubo confirmación.
+- Revocar un miembro bloquea inmediatamente sus nuevas operaciones en servidor y hace inaccesible su caché al detectarlo. **No se puede retirar remotamente información ya vista o copiada ni garantizar borrado instantáneo de un dispositivo offline**; documentar ese límite y decidir duración del acceso offline.
+- Revisar exportación/importación local versionada como red de seguridad antes de migrar: validación, vista previa, duplicados e importación atómica; no es una funcionalidad actual ni se introduce silenciosamente junto a la nube.
+
+### Comparación de caminos y coste
+
+| Alternativa | Ventaja | Coste/riesgo | Recomendación |
+| --- | --- | --- | --- |
+| Sustituir SQLite por CRUD remoto | Menos piezas al principio. | Rompe el comportamiento offline aprobado y hace depender el guardado de red. | Descartar para este producto, salvo cambio explícito de objetivos. |
+| SQLite + Supabase + protocolo propio acotado | Aprovecha la app y permite compartir con permisos claros. | Exige diseñar recuperación, deduplicación, versiones y borrados; no es «instalar un SDK». | Candidata preferente para la SDD v2; validar con un experimento pequeño antes de producción. |
+| Motor local-first especializado con Supabase | Puede reducir mantenimiento de sincronización. | Dependencia, compatibilidad Expo/CNG, modelo de datos, privacidad y posibles costes. | Evaluar si el protocolo propio crece; no adoptar ni añadir dependencias sin comparar esos factores. |
+
+Supabase, proveedores de autenticación/correo y notificaciones tienen cuotas y condiciones cambiantes: verificar plan, región, backups, suspensión, residencia de datos y límites antes de crear un proyecto. Un plan gratuito no equivale a backup garantizado ni a coste cero ilimitado. No hay presupuesto ni proyecto cloud aprobados. Vercel solo sería necesario para web/invitaciones si se decide usarlo; no aloja la app nativa. Expo/EAS se reserva para builds/distribución autorizados.
+
+### Priorización y entregas propuestas
+
+| Orden / propuesta | Entrega acotada | Dependencias | Evidencia para cerrarla |
+| --- | --- | --- | --- |
+| 0 — PROP-DEV01 | Especificar/configurar Projects, jerarquía, `develop`, ramas temporales y controles obligatorios. Revisor local si no hay servicio remoto gratuito verificado. | Concretar publicación segura del resultado local y fuente de confianza. | PR piloto bloqueada sin OK, con fallo y con revisión obsoleta; pasa con revisión válida del commit/contexto actual. No basta un comentario «OK». |
+| 1 — PROP-UX01/03 | Claridad del formulario y auditoría física de accesibilidad/Deshacer; UX02/04 tras comparar mockups. | No depende de nube; no rediseñar simultáneamente todo el tablero. | Tests relevantes y checklist real en iOS/Android, con tamaño de texto y lector registrados. |
+| 2 — PROP-SPEC01 | Acordar SDD v2, mockups, modelo y contratos de sincronización/permisos. | Decisiones de la tabla siguiente. | Criterios nuevos sin reutilizar AC01–AC36, errores/casos límite y tech-plan aprobados. |
+| 3 — PROP-DATA01 | Migración local/tableros y pruebas de importación sin pérdida. | Modelo v2 aprobado. | Snapshot v2 conservado, fallo recuperable, IDs/orden y aislamiento local verificados. |
+| 4 — PROP-CLOUD01/02 | Experimento de Auth/RLS + una tarea en dos clientes con reintentos/versiones. | Proyecto/entorno de pruebas autorizado; contratos cerrados. | Aislamiento real entre usuarios, duplicación de envío, reconexión y conflicto demostrados; sin datos personales reales. |
+| 5 — PROP-UX05/06 + colaboración | Cuentas/tableros/invitaciones/responsable y estados de sincronización por entregas. | Migración y experimento anteriores correctos. | Dos usuarios y dispositivos, revocación, sesión caducada, borrado/Deshacer y borradores sin pérdida. |
+| 6 — PROP-FUNC01 | Búsqueda/filtro «Mías», archivo de Hecho y checklists si el uso lo justifica. | Modelo/contratos estables; elegir una función por entrega. | Búsqueda sobre datos locales autorizados, vacíos útiles y conservación de orden/estado. |
+| 7 — PROP-FUNC02 | Recurrencia, fechas y recordatorios; después valorar rotación. | Decidir zonas horarias, quién genera ocurrencias y permisos/notificaciones. | No duplicar recurrencias al abrir dos dispositivos; probar cambio horario, completado y permiso denegado. Un recordatorio no es garantía de ejecución del SO. |
+
+No convertir todas estas filas en issues «Lista»: varias son investigación/especificación. Cada entrega tendrá su issue padre y sub-issues después de cerrar su alcance.
+
+Para PROP-DEV01 se propone ampliar la CI existente con reglas ESLint justificadas por el código, TypeScript, Jest y análisis determinista de seguridad/secretos (evaluar Semgrep CE y Gitleaks, además de actionlint para workflows). Reglas y versiones deben fijarse y probarse contra la base actual, sin silenciar fallos ni exigir porcentajes de cobertura arbitrarios. No presuponer que los productos cloud de esas herramientas son gratuitos. Separar el check de IA de los checks deterministas: error, timeout o respuesta no válida del revisor no significan OK. Una nueva revisión debe vincularse al HEAD y contexto de base actual; cambios en cualquiera invalidan el resultado anterior. No otorgar al revisor capacidad de escribir código, cambiar sus controles o hacer merge. Una aprobación publicada con las mismas credenciales del autor no constituye por sí sola revisión independiente; definir el publicador confiable y su protección antes de anunciar una garantía obligatoria.
+
+### Trabajo paralelo e issues preparadas para desarrollo
+
+Tras acordar cada entrega, una sub-issue debe incluir: padre/Project, objetivo, alcance/no alcance, contrato técnico y referencias, criterios verificables, archivos/áreas previsibles, pruebas/comandos/evidencia, dependencias, riesgos/migración y estado de decisiones. No depender del contexto de este chat. Una PR referencia la sub-issue y su padre; un worktree por rama temporal desde `develop`. No usar `Closes` como única automatización si `develop` no es la rama predeterminada.
+
+Paralelismo seguro: formulario/accesibilidad y especificación cloud pueden avanzar separados; Auth/RLS, migración local y prototipos UI solo se paralelizan después de acordar contratos y usando adaptadores/dobles explícitos. El motor de sincronización depende de versión/idempotencia/borrado definidos. No dividir tareas que escriban a la vez en el mismo contrato sin un responsable de integración.
+
+**Borrador de sub-issue concreta — no creada en GitHub ni aprobada:**
+
+> **Título:** Completar ayudas y contadores del formulario (PROP-UX01).
+>
+> **Parent/Project:** asignar a la futura épica de claridad/accesibilidad antes de pasar a Lista.
+>
+> **Objetivo:** explicar requisitos y límites sin alterar la persistencia explícita.
+>
+> **Alcance:** título obligatorio, contador 0–2000 de descripción, ayuda/error contextual tras interacción y accesibilidad. No añadir nube, modificar límites, borrar borradores ni rediseñar navegación.
+>
+> **Contrato:** usar validación de dominio existente; definir el disparador de error en la especificación de la issue. Mantener los fallos de almacenamiento junto a Guardar.
+>
+> **Criterios propuestos:** apertura vacía sin alarma; título vacío/espacios no guarda y explica el requisito tras interacción; contador de descripción refleja el texto; límites/pegado conservan la regla vigente; un fallo de repositorio conserva borrador; Guardar permanece fijo y alcanzable.
+>
+> **Áreas:** `TaskForm.tsx`, `task-form.test.tsx`; solo cambiar `model.ts` si el contrato aprobado lo exige, no duplicar reglas.
+>
+> **Verificación:** lint, tipos, tests de formulario, revisión con texto ampliado/lector/teclado en ambas plataformas. Si no hay dispositivo, registrar la evidencia pendiente, no marcar aceptación física.
+>
+> **Dependencias:** aprobar detalle de interacción y asignar parent; no necesita backend. PR a `develop`, revisión independiente del diff y checks obligatorios una vez configurados.
+
+### Decisiones que deben cerrarse antes de implementar v2
+
+| Tema | Recomendación inicial | Estado |
+| --- | --- | --- |
+| Cuenta | Mantener uso local sin cuenta; acceso opcional para nube. Evaluar enlace/código por correo frente a contraseña y proveedores, con recuperación y deep links. | No decidido; no fijar método solo por el quickstart. |
+| Tableros y roles | Personal + compartidos, propietario y miembro, un responsable opcional por tarea. | Propuesto, no aprobado. |
+| Conflictos | Versión servidor y resolución explícita sin sobrescritura silenciosa. | Falta validar UX y contrato, incluidos cambios en campos diferentes. |
+| Datos locales y sesión | Importación voluntaria/idempotente, aislamiento entre cuentas y política explícita de caché/offline/revocación. | Decisión de producto y seguridad pendiente. |
+| Invitaciones | Enlace de uso único y aceptación autenticada; decidir correo destinatario, expiración y recuperación. | Pendiente. |
+| Operación cloud | Región, proyecto nuevo/existente, cuotas, backups/retención, tratamiento de datos y presupuesto. | Sin verificación ni autorización de recursos. |
+| Revisión obligatoria | Local por defecto si no se demuestra gratuidad remota, check ligado a SHA/base/contexto y publicador confiable. | Flujo solicitado, integración técnica pendiente; no afirmar bloqueo activo. |
+
+Estas decisiones no bloquean este análisis ni los bocetos; sí impiden presentar como listas las issues de implementación que dependen de ellas. Próximo entregable recomendado: concretar PROP-DEV01 y PROP-UX01, y redactar la propuesta SDD v2 a partir de PROP-SPEC01 sin implementar todavía nube.
+
+### Fuentes consultadas para la propuesta cloud
+
+Documentación oficial consultada el 2026-10-31; comprobar versiones instaladas y referencias específicas antes de implementar:
+
+- [Supabase Auth para React Native](https://supabase.com/docs/guides/auth/quickstarts/react-native): guía de integración, no arquitectura offline ni garantía del almacenamiento de sesión elegido.
+- [RLS, grants y pruebas de políticas](https://supabase.com/docs/guides/database/postgres/row-level-security): autorización por fila y pruebas de permitidos/denegados.
+- [Realtime Postgres Changes](https://supabase.com/docs/guides/realtime/postgres-changes): suscripción a cambios; no reemplaza cola durable, recuperación y reconciliación SQLite.
 
 ## 1. Objetivo y base técnica
 
