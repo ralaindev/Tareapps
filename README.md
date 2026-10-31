@@ -12,7 +12,9 @@ La aplicación está implementada. Estos documentos recogen su especificación, 
 
 ### Continuar en una sesión nueva
 
-Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. El 2026-10-31 se creó [ralaindev/Tareapps](https://github.com/ralaindev/Tareapps), privado. El usuario autorizó el primer commit/push; el remoto local es `origin` y la rama es `main`. Verificar el historial y seguimiento de `origin/main` antes de actuar. La fase de nube todavía no tiene SDD v2 aprobada ni implementación; CI y despliegues quedan fuera del primer envío.
+**Repositorio público:** [ralaindev/Tareapps](https://github.com/ralaindev/Tareapps). Se migró el historial corregido a un repositorio independiente para no publicar los commits antiguos con correo personal. Los commits usan `noreply` como autor y committer; los identificadores anteriores no son accesibles desde este repositorio. El repositorio original se conserva privado y no debe publicarse.
+
+Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. El remoto local es `origin` y la rama es `main`. Verificar el historial y seguimiento de `origin/main` antes de actuar. Pendiente configurar el flujo solicitado de Projects, issues padre/sub-issues, `develop`, PRs y revisión obligatoria. La fase de nube todavía no tiene SDD v2 aprobada ni implementación; no hay despliegues autorizados.
 
 ## Funcionalidades
 
@@ -85,9 +87,9 @@ Los scripts `android` e `ios` actuales invocan el servidor de Expo con la plataf
 
 El workflow [CI](.github/workflows/ci.yml) ejecuta `npm ci`, lint, TypeScript y los tests de Jest secuencialmente en Ubuntu con Node.js 24. Se activa al subir cambios a `main`, en pull requests dirigidas a `main` y manualmente desde Actions. Usa caché de npm vinculada a `package-lock.json`, cancela ejecuciones anteriores de la misma referencia y limita cada ejecución a 15 minutos.
 
-Las acciones oficiales están fijadas por SHA. Solo se concede `contents: read`, no se persisten las credenciales de checkout y no se requieren secretos configurados por el usuario. No compila aplicaciones nativas, no despliega y no modifica protección de ramas. En un repositorio privado, las ejecuciones consumen la cuota de GitHub Actions de la cuenta; no se configura facturación ni se amplía el presupuesto.
+Las acciones oficiales están fijadas por SHA. Solo se concede `contents: read`, no se persisten las credenciales de checkout y no se requieren secretos configurados por el usuario. No compila aplicaciones nativas, no despliega y no modifica protección de ramas. Los runners estándar de GitHub Actions son gratuitos para este repositorio público; no se configura facturación ni se amplía el presupuesto.
 
-CI activa en GitHub. [Primera ejecución real correcta](https://github.com/ralaindev/Tareapps/actions/runs/41185691813) el 2026-10-31, para el commit `200149f`: instalación desde cero, lint, TypeScript y tests aprobados en Ubuntu/Node.js 24. No equivale a una compilación nativa ni validación en dispositivo.
+CI activa en GitHub. [Primera ejecución real correcta en el repositorio nuevo](https://github.com/ralaindev/Tareapps/actions/runs/41199748669) el 2026-10-31, para el commit `f74ea78`: instalación desde cero, lint, TypeScript y tests aprobados en Ubuntu/Node.js 24. No equivale a una compilación nativa ni validación en dispositivo.
 
 ### Comandos locales
 
