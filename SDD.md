@@ -354,12 +354,12 @@ Base autorizada por el usuario el **2026-10-31**, sin exigir decisiones previas 
 
 | Paso del diagnóstico | Alcance autorizado y estado de esta base |
 | --- | --- |
-| 1 — formulario/accesibilidad | Afinar el formulario local (AC37) y revisar accesibilidad/Deshacer. El código de formulario observado contiene cambios en curso; la aceptación física sigue pendiente. No se da por realizada la auditoría de Deshacer. |
-| 2 — especificación | Esta sección y [CLOUD_CONTRACT.md](docs/CLOUD_CONTRACT.md) fijan la base de producto y contratos v1 para planificación/experimento; el plan técnico se mantiene en `TECH_PLAN.md`. |
-| 3 — datos locales | Autoriza preparar migración desde SQLite v2, tableros y pruebas de conservación/importación/aislamiento. Esta documentación no declara esa migración implementada. |
-| 4 — experimento | Auth/RLS y mutaciones versionadas en Supabase **local**, aislado en `supabase/`, con dos usuarios de prueba y snapshots. Sin integrar un cliente Supabase en la app. Su implementación y evidencia deben registrarse separadamente. |
+| 1 — flujo de trabajo | Projects, padre/sub-issues, develop/PRs, calidad y revisión local firmada. Instalado en PR #6; protección activa y prueba piloto posterior. Guía en `docs/DEVELOPMENT.md`. |
+| 2 — formulario/accesibilidad | Afinar formulario local (AC37). Implementado con tests; aceptación física y auditoría real de Deshacer siguen pendientes. |
+| 3 — especificación v2 | Esta sección y [CLOUD_CONTRACT.md](docs/CLOUD_CONTRACT.md) fijan producto y contratos iniciales para planificación/experimento. La futura migración SQLite no está implementada. |
+| 4 — experimento | Auth/RLS y mutaciones versionadas en Supabase **local**, aislado en `supabase/`, con dos usuarios y snapshots. CI real correcta en run 41202732266. Sin cliente Supabase en la app. |
 
-El paso 0 (flujo GitHub) y los pasos 5–7 (integración de colaboración en la app y evolución funcional) no quedan ejecutados ni autorizados implícitamente por esta base. Las cuentas, invitaciones y sincronización de producción son objetivos posteriores; no hay autorización aquí para remotos, despliegues, commits ni recursos con coste. Este encargo documental solo modifica el SDD y crea el contrato.
+La numeración de esta tabla corresponde a los cuatro pasos ofrecidos al usuario, no a los índices 0–7 del roadmap histórico. El encargo autoriza implementar e integrar esta base por PR, con recursos GitHub gratuitos; no implica desplegar, crear recursos cloud con coste ni integrar toda la colaboración productiva. Las cuentas, invitaciones, migración SQLite y sincronización dentro de la app siguen siendo objetivos posteriores.
 
 ### 16.2. Decisiones iniciales de producto
 
@@ -389,7 +389,7 @@ Referencias sin duplicar las maquetas existentes:
 
 | ID | Resultado observable | Estado de implementación/verificación |
 | --- | --- | --- |
-| AC37 | Alta y edición identifican el título como obligatorio, mantienen 1–120 caracteres tras `trim` y muestran contador de descripción `longitud/2000`. Abrir vacío muestra ayuda sin error rojo. Al perder foco (`blur`), un título vacío/espacios muestra error junto al campo; corregirlo retira el error. Contadores no anuncian cada carácter. Valores inválidos bloquean Guardar; no se persiste al escribir. Fallos de guardado conservan borrador y error junto a la barra fija. | Cambio local actual, observable en `TaskForm.tsx` al redactar; no equivale a validación cloud. Tests de formulario, lint/tipos y revisión física deben tener evidencia propia; esta sección no declara su ejecución ni cierre en dispositivo. |
+| AC37 | Alta y edición identifican el título como obligatorio, mantienen 1–120 caracteres tras `trim` y muestran contador de descripción `longitud/2000`. Abrir vacío muestra ayuda sin error rojo. Al perder foco (`blur`), un título vacío/espacios muestra error junto al campo; corregirlo retira el error. Contadores no anuncian cada carácter. Valores inválidos bloquean Guardar; no se persiste al escribir. Fallos de guardado conservan borrador y error junto a la barra fija. | Implementado en `TaskForm.tsx`; 14 tests de formulario, lint/tipos y CI correctos en la base #6. Sin cierre físico: lector/teclado/texto ampliado pendientes. No equivale a validación cloud. |
 
 AC37 precisa la interacción del formulario sin sustituir AC03, AC11, AC12 ni AC33. No depende de Auth ni de red.
 
@@ -414,8 +414,9 @@ Todos los criterios siguientes son **objetivos de la base v2, pendientes de impl
 ### 16.6. Condición de terminado y registro de evidencia
 
 - **Documentación base:** decisiones iniciales, límites, criterios y contratos enlazados; editable después con trazabilidad de cambios. No se presenta como entrega cloud.
-- **Paso 1:** lint, tipos y tests significativos de formulario. La revisión de teclado, texto ampliado, lector, scroll y Deshacer en iOS/Android se registra por separado con entorno/fecha/resultado; queda pendiente si no se ejecutó.
-- **Paso 3:** SQL real para migración desde snapshots v2, rollback, reintento/importación idempotente y aislamiento entre cuentas; dobles de repositorio no bastan para demostrar migración.
+- **Paso 1:** circuito PR/revisión/calidad probado con una PR piloto; no basta guardar una configuración. Registrar estados sin firma/inválida/obsoleta y aprobación válida, y borrado de rama tras merge.
+- **Paso 2:** lint, tipos y tests significativos de formulario. La revisión de teclado, texto ampliado, lector, scroll y Deshacer en iOS/Android se registra por separado con entorno/fecha/resultado; queda pendiente si no se ejecutó.
+- **Paso 3:** documentación y contratos, no migración ejecutada. Cuando se implemente la migración: SQL real desde snapshots v2, rollback, reintento/importación idempotente y aislamiento entre cuentas; dobles de repositorio no bastan para demostrarla.
 - **Paso 4:** pruebas reproducibles contra Supabase local real con Auth y dos usuarios, RLS/grants y RPC reales, permitidos y denegados, versiones, duplicados, conflictos y revocación; evidencia del comando, entorno y resultado. CI debe ejecutar ese entorno real para acreditar permisos/Auth, no solo dobles o claims JWT inventadas. Si únicamente corre local o con dobles, indicarlo expresamente y dejar la integración CI pendiente.
 - **Producción futura:** AC38+ se cierra por entregas con evidencia servidor/cliente y validación en dispositivos cuando corresponda. Ni tests unitarios, ni un run CI de la app local, ni exportar JavaScript acreditan nube integrada o dispositivos.
 

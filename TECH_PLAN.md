@@ -29,7 +29,15 @@ se ejecutará en Ubuntu/Docker de CI. Sin recursos cloud remotos, tiendas ni cos
 Los párrafos históricos siguientes conservan el diagnóstico previo. Para estado vigente,
 consultar esta sección, `docs/DEVELOPMENT.md` y los resultados enlazados de las PRs.
 
-**Estado:** la aplicación local está implementada; la siguiente ampliación es un roadmap discutido, no una SDD v2 aprobada. Leer `AGENTS.md` para el contexto breve y verificar el estado real de Git antes de actuar.
+**Evidencia de la base:** PR https://github.com/ralaindev/Tareapps/pull/6,
+CI real https://github.com/ralaindev/Tareapps/actions/runs/41202732266.
+81 tests Jest/7 suites, 9 tests criptográficos/servicio, Gitleaks y experimento Auth/RLS
+correctos. La revisión independiente detectó dos bloqueos del gate (replay y verde
+obsoleto ante fallo), corregidos y revisados antes de fusionar. `main`/`develop`
+ya tienen protecciones estrictas con cuatro checks requeridos aplicados a admin,
+sin force-push ni borrado. PR piloto pendiente para registrar el bloqueo real.
+
+**Estado:** app local implementada y base inicial de pasos 1–4 integrada mediante PR #6. Hay SDD v2/contrato inicial y experimento backend aislado, no nube integrada en la app. Leer `AGENTS.md` y verificar Git antes de actuar.
 
 ### Estado de GitHub y pasos pendientes
 

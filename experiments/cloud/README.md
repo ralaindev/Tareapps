@@ -174,9 +174,11 @@ tombstone/restore condicionado por versión, retries concurrentes y revocación
 incluido retry antiguo. También compite la misma identidad con payload distinto
 entre dos tableros accesibles para comprobar el bloqueo global actor/op.
 
-**Aquí (Windows) no hay Docker ni Podman. No se ejecutó `supabase start`,
-`db reset`, `db lint` ni la integración Auth/Postgres. No hay validación real
-de la migración/RLS/RPC todavía.** Se ejecutaron:
+**Aquí (Windows) no hay Docker ni Podman**, por lo que no se ejecutó el stack
+local en este equipo. Sí se ejecutaron `start`, `db reset`, `db lint` y la suite
+Auth/Postgres/RLS/RPC reales en Ubuntu CI: run
+https://github.com/ralaindev/Tareapps/actions/runs/41202732266, correcto antes del
+merge de la base #6. La evidencia local adicional fue:
 
 ```sh
 npm view supabase version                          # 2.122.0
@@ -198,6 +200,7 @@ git diff --check
 La CLI llegó a inspeccionar Docker tras cargar/validar configuración; esto no
 prueba que arranque el stack. Configuración contrastada con la
 [plantilla de CLI v2.122.0](https://github.com/supabase/cli/blob/v2.122.0/apps/cli-go/pkg/config/templates/config.toml)
-y revisión estática de permisos, bloqueos y transacción. SQL/PLpgSQL y comportamiento
-real quedan sujetos al runner Ubuntu. No se han creado recursos remotos, hecho
-commits ni publicado nada. Las claves administrativas nunca deben llegar al móvil.
+y revisión estática de permisos, bloqueos y transacción. La ejecución Ubuntu indicada
+arriba acredita el experimento SQL/HTTP, no una app móvil conectada ni producción.
+No se han creado recursos cloud; la base se integró por PR. Las claves administrativas
+nunca deben llegar al móvil.

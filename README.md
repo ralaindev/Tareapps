@@ -19,7 +19,7 @@ La aplicación está implementada. Estos documentos recogen su especificación, 
 
 **Repositorio público:** [ralaindev/Tareapps](https://github.com/ralaindev/Tareapps). Se migró el historial corregido a un repositorio independiente para no publicar los commits antiguos con correo personal. Los commits usan `noreply` como autor y committer; los identificadores anteriores no son accesibles desde este repositorio. El repositorio original se conserva privado y no debe publicarse.
 
-Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. El remoto local es `origin` y la rama es `main`. Verificar el historial y seguimiento de `origin/main` antes de actuar. Pendiente configurar el flujo solicitado de Projects, issues padre/sub-issues, `develop`, PRs y revisión obligatoria. La fase de nube todavía no tiene SDD v2 aprobada ni implementación; no hay despliegues autorizados.
+Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. `main`/`develop` son las ramas persistentes; el trabajo parte de `develop` en ramas temporales. Hay Project, issues padre/sub-issues y revisión local firmada, descritos en la guía de desarrollo. La base SDD v2/contrato y experimento Supabase no conectan todavía la app a nube; no hay despliegues autorizados.
 
 ## Funcionalidades
 
@@ -112,7 +112,7 @@ Resultados comunicados para la implementación actual:
 | Comprobación | Estado |
 | --- | --- |
 | `npm run lint` | Aprobado. |
-| `npm run test` | 78 pruebas aprobadas en 7 suites. Las pruebas de persistencia requieren Node.js 24. |
+| `npm run test` | 81 pruebas aprobadas en 7 suites. Las pruebas de persistencia requieren Node.js 24. |
 | `npx expo-doctor` | 19/20 al preparar el traspaso; detecta 10 paquetes con parches disponibles. Dependencias sin actualizar. |
 | Exportación JavaScript para iOS | Correcta. |
 | Exportación JavaScript para Android | Correcta. |
