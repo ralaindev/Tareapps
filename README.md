@@ -87,7 +87,7 @@ El workflow [CI](.github/workflows/ci.yml) ejecuta `npm ci`, lint, TypeScript y 
 
 Las acciones oficiales están fijadas por SHA. Solo se concede `contents: read`, no se persisten las credenciales de checkout y no se requieren secretos configurados por el usuario. No compila aplicaciones nativas, no despliega y no modifica protección de ramas. En un repositorio privado, las ejecuciones consumen la cuota de GitHub Actions de la cuenta; no se configura facturación ni se amplía el presupuesto.
 
-Estado inicial: configuración preparada localmente; pendiente de commit/push y primera ejecución real en GitHub. No equivale a una validación en dispositivo.
+CI activa en GitHub. [Primera ejecución real correcta](https://github.com/ralaindev/Tareapps/actions/runs/41185691813) el 2026-10-31, para el commit `200149f`: instalación desde cero, lint, TypeScript y tests aprobados en Ubuntu/Node.js 24. No equivale a una compilación nativa ni validación en dispositivo.
 
 ### Comandos locales
 

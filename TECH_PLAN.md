@@ -15,9 +15,9 @@
 
 Configuración solicitada después del primer envío: `.github/workflows/ci.yml`, un job Ubuntu/Node.js 24 con instalación reproducible (`npm ci`), lint, tipos y tests secuenciales. Eventos: push a `main`, PR dirigida a `main` y ejecución manual. Acciones oficiales checkout/setup-node v7 fijadas por SHA, caché npm por lockfile, permisos `contents: read`, sin credenciales persistidas ni secretos adicionales, timeout de 15 minutos y cancelación de ejecuciones obsoletas por referencia. No incluye builds nativos, despliegues ni cambios de protección de rama/facturación.
 
-Pendiente de subir este cambio y observar la primera ejecución real; la validación local no demuestra que el runner remoto haya pasado. Las ejecuciones de este repositorio privado consumen la cuota de Actions de la cuenta.
+Workflow subido en el commit `200149f`. Primera ejecución real correcta el 2026-10-31: [run 41185691813](https://github.com/ralaindev/Tareapps/actions/runs/41185691813), con instalación desde cero, lint, tipos y tests aprobados en Ubuntu/Node.js 24; job completado en 1 min 3 s. Las ejecuciones de este repositorio privado consumen la cuota de Actions de la cuenta. No se ha modificado facturación ni protección de ramas.
 
-Validación local del workflow: `actionlint` 1.7.12 sin errores; lint, tipos y los 78 tests en 7 suites correctos con `CI=true` y Jest `--ci` en Windows/Node.js 24. No se ha probado todavía la instalación desde cero ni la ejecución en Ubuntu para este workflow.
+Validación local del workflow: `actionlint` 1.7.12 sin errores; lint, tipos y los 78 tests en 7 suites correctos con `CI=true` y Jest `--ci` en Windows/Node.js 24. La ejecución remota indicada arriba verifica también la instalación desde cero y los comandos de calidad en Ubuntu, no una compilación nativa ni una prueba en dispositivo.
 
 ### Roadmap propuesto, pendiente de concretar
 
