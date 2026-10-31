@@ -11,6 +11,14 @@
 3. El usuario autorizó después el primer commit y push. Remoto local `origin`: `https://github.com/ralaindev/Tareapps.git`; rama local `main`. Autenticación Git de lectura verificada con GitHub CLI, sin persistir el token ni cambiar la configuración global de credenciales. Antes del primer commit se reforzó `.gitignore` para excluir `.env` y bases SQLite, no se detectaron patrones habituales de credenciales y pasaron lint, tipos y 78 tests en 7 suites con Node.js 24. Consultar Git/GitHub para verificar el historial y seguimiento efectivo de `origin/main`. Esta autorización no incluye CI, nube ni despliegues.
 4. Verificar los MCP/proyectos de Supabase, Vercel y Expo. Se observó Supabase en la configuración global, no se verificó integración de la app. No hay SDK Supabase, sesión de usuario ni sincronización implementados.
 
+### CI de GitHub Actions
+
+Configuración solicitada después del primer envío: `.github/workflows/ci.yml`, un job Ubuntu/Node.js 24 con instalación reproducible (`npm ci`), lint, tipos y tests secuenciales. Eventos: push a `main`, PR dirigida a `main` y ejecución manual. Acciones oficiales checkout/setup-node v7 fijadas por SHA, caché npm por lockfile, permisos `contents: read`, sin credenciales persistidas ni secretos adicionales, timeout de 15 minutos y cancelación de ejecuciones obsoletas por referencia. No incluye builds nativos, despliegues ni cambios de protección de rama/facturación.
+
+Pendiente de subir este cambio y observar la primera ejecución real; la validación local no demuestra que el runner remoto haya pasado. Las ejecuciones de este repositorio privado consumen la cuota de Actions de la cuenta.
+
+Validación local del workflow: `actionlint` 1.7.12 sin errores; lint, tipos y los 78 tests en 7 suites correctos con `CI=true` y Jest `--ci` en Windows/Node.js 24. No se ha probado todavía la instalación desde cero ni la ejecución en Ubuntu para este workflow.
+
 ### Roadmap propuesto, pendiente de concretar
 
 | Etapa | Alcance discutido | Cierre previo al código |

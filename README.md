@@ -81,6 +81,16 @@ Los scripts `android` e `ios` actuales invocan el servidor de Expo con la plataf
 
 ## Comprobaciones de calidad
 
+### Integración continua
+
+El workflow [CI](.github/workflows/ci.yml) ejecuta `npm ci`, lint, TypeScript y los tests de Jest secuencialmente en Ubuntu con Node.js 24. Se activa al subir cambios a `main`, en pull requests dirigidas a `main` y manualmente desde Actions. Usa caché de npm vinculada a `package-lock.json`, cancela ejecuciones anteriores de la misma referencia y limita cada ejecución a 15 minutos.
+
+Las acciones oficiales están fijadas por SHA. Solo se concede `contents: read`, no se persisten las credenciales de checkout y no se requieren secretos configurados por el usuario. No compila aplicaciones nativas, no despliega y no modifica protección de ramas. En un repositorio privado, las ejecuciones consumen la cuota de GitHub Actions de la cuenta; no se configura facturación ni se amplía el presupuesto.
+
+Estado inicial: configuración preparada localmente; pendiente de commit/push y primera ejecución real en GitHub. No equivale a una validación en dispositivo.
+
+### Comandos locales
+
 Comandos disponibles para desarrollo y verificación:
 
 ```sh
