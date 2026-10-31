@@ -35,7 +35,9 @@ CI real https://github.com/ralaindev/Tareapps/actions/runs/41202732266.
 correctos. La revisión independiente detectó dos bloqueos del gate (replay y verde
 obsoleto ante fallo), corregidos y revisados antes de fusionar. `main`/`develop`
 ya tienen protecciones estrictas con cuatro checks requeridos aplicados a admin,
-sin force-push ni borrado. PR piloto pendiente para registrar el bloqueo real.
+sin force-push ni borrado. La PR piloto #8 registra el bloqueo real sin firma, con
+firma inválida y la aprobación válida; consultar su historial para obsolescencia
+tras nuevos commits y resultado final. Guía y enlaces en `docs/DEVELOPMENT.md`.
 
 **Estado:** app local implementada y base inicial de pasos 1–4 integrada mediante PR #6. Hay SDD v2/contrato inicial y experimento backend aislado, no nube integrada en la app. Leer `AGENTS.md` y verificar Git antes de actuar.
 

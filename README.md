@@ -90,9 +90,9 @@ Los scripts `android` e `ios` actuales invocan el servidor de Expo con la plataf
 
 ### Integración continua
 
-El workflow [CI](.github/workflows/ci.yml) ejecuta `npm ci`, lint, TypeScript y los tests de Jest secuencialmente en Ubuntu con Node.js 24. Se activa al subir cambios a `main`, en pull requests dirigidas a `main` y manualmente desde Actions. Usa caché de npm vinculada a `package-lock.json`, cancela ejecuciones anteriores de la misma referencia y limita cada ejecución a 15 minutos.
+El workflow [CI](.github/workflows/ci.yml) ejecuta `npm ci`, lint, TypeScript, Jest y tests del verificador en Ubuntu/Node.js 24. Se activa en push/PR a `main` y `develop`, y manualmente. Usa caché npm del lockfile y cancela ejecuciones obsoletas: calidad tiene timeout de 15 minutos; los jobs separados `Secrets` y `Cloud experiment` tienen límites de 5 y 25 minutos.
 
-Las acciones oficiales están fijadas por SHA. Solo se concede `contents: read`, no se persisten las credenciales de checkout y no se requieren secretos configurados por el usuario. No compila aplicaciones nativas, no despliega y no modifica protección de ramas. Los runners estándar de GitHub Actions son gratuitos para este repositorio público; no se configura facturación ni se amplía el presupuesto.
+Las acciones oficiales están fijadas por SHA. CI tiene permisos de lectura, sin credenciales persistidas ni secretos de proveedor. El workflow separado de revisión puede publicar statuses, pero solo ejecuta el verificador confiable de `main`, nunca código de PR. No hay builds nativos ni despliegues. Las protecciones de ramas exigen calidad, secretos, experimento y revisión firmada. Los runners estándar son gratuitos para este repositorio público; no se modifica facturación.
 
 CI activa en GitHub. [Primera ejecución real correcta en el repositorio nuevo](https://github.com/ralaindev/Tareapps/actions/runs/41199748669) el 2026-10-31, para el commit `f74ea78`: instalación desde cero, lint, TypeScript y tests aprobados en Ubuntu/Node.js 24. No equivale a una compilación nativa ni validación en dispositivo.
 
