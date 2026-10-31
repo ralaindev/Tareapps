@@ -1,0 +1,44 @@
+name: Signed local review
+
+on:
+  pull_request_target:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+  issue_comment:
+    types: [created, edited, deleted]
+  push:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+  statuses: write
+
+concurrency:
+  group: signed-review-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Verify signed local review
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted verifier only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Node.js 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Verify and publish commit status
+        run: node scripts/review/gate.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

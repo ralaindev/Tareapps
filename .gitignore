@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 coverage/
+.reviews/
 
 # Expo
 .expo/
@@ -30,6 +31,7 @@ yarn-error.*
 # macOS
 .DS_Store
 *.pem
+!.github/review-public-key.pem
 
 # local env files
 .env

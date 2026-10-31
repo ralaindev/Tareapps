@@ -2,11 +2,22 @@ import { router, usePreventRemove } from 'expo-router';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { STATUSES, STATUS_LABELS, type Task, type TaskStatus } from '../features/tasks/model';
+import { STATUSES, STATUS_LABELS, validateTaskInput, type Task, type TaskStatus } from '../features/tasks/model';
 import { useTasks } from '../features/tasks/TasksProvider';
 import { type Palette } from '../theme/tokens';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { Button } from './Button';
+
+const TITLE_HELP = 'Obligatorio: entre 1 y 120 caracteres, sin contar los espacios al principio y al final.';
+
+function getTitleError(title: string): string | null {
+  try {
+    validateTaskInput({ title, description: '', status: 'pending' });
+    return null;
+  } catch (cause) {
+    return cause instanceof Error ? cause.message : 'Escribe un título de entre 1 y 120 caracteres.';
+  }
+}
 
 export function TaskForm({ task }: { task?: Task }) {
   const { colors, styles, isDark } = useThemedStyles(createStyles);
@@ -15,8 +26,14 @@ export function TaskForm({ task }: { task?: Task }) {
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initial.description);
   const [status, setStatus] = useState<TaskStatus>(initial.status);
+  const [titleError, setTitleError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
+  const titleValidationError = getTitleError(title);
+  const changeTitle = (value: string) => {
+    setTitle(value);
+    if (titleError) setTitleError(getTitleError(value));
+  };
   const dirty = title !== initial.title || description !== initial.description || status !== initial.status;
   const disablePrevention = usePreventRemove(!finished && (dirty || busy), ({ repeat }) => {
     if (busy) return;
@@ -55,15 +72,19 @@ export function TaskForm({ task }: { task?: Task }) {
     </View>
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView testID="task-form-fields" style={styles.flex} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-        <Text style={styles.label}>Título</Text>
-        <TextInput accessibilityLabel="Título" value={title} onChangeText={setTitle} autoFocus={!task}
+        <Text style={styles.label}>Título <Text style={styles.optional}>· obligatorio</Text></Text>
+        <TextInput accessibilityLabel="Título" accessibilityHint={TITLE_HELP} value={title} onChangeText={changeTitle}
+          onBlur={() => setTitleError(titleValidationError)} autoFocus={!task}
           editable={!busy} keyboardAppearance={isDark ? 'dark' : 'light'} maxLength={120} placeholder="¿Qué quieres hacer?" placeholderTextColor={colors.muted}
-          style={styles.input} selectionColor={colors.primary} multiline textAlignVertical="top" />
-        <Text style={styles.hint}>{title.length}/120</Text>
+          style={[styles.input, titleError && styles.invalidInput]} selectionColor={colors.primary} multiline textAlignVertical="top" />
+        <Text style={styles.help}>{TITLE_HELP}</Text>
+        <Text accessibilityLiveRegion="none" style={styles.hint}>{title.trim().length}/120</Text>
+        {titleError && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{titleError}</Text>}
         <Text style={styles.label}>Descripción <Text style={styles.optional}>· opcional</Text></Text>
         <TextInput accessibilityLabel="Descripción opcional" value={description} onChangeText={setDescription}
           editable={!busy} keyboardAppearance={isDark ? 'dark' : 'light'} maxLength={2000} placeholder="Añade algún detalle…" placeholderTextColor={colors.muted}
           multiline style={[styles.input, styles.description]} selectionColor={colors.primary} textAlignVertical="top" />
+        <Text accessibilityLiveRegion="none" style={styles.hint}>{description.length}/2000</Text>
         {task ? <View style={styles.statusSection}>
           <Text style={styles.label}>Estado</Text>
           {STATUSES.map(value => <Pressable key={value} accessibilityRole="radio"
@@ -80,7 +101,7 @@ export function TaskForm({ task }: { task?: Task }) {
       <View style={styles.saveBar} testID="task-form-save-bar">
         {error && <Text accessibilityRole="alert" accessibilityLiveRegion="assertive" style={styles.error}>{error}</Text>}
         <Button label={busy ? 'Guardando…' : task ? 'Guardar cambios' : 'Crear tarea'}
-          disabled={busy || !title.trim() || title.trim().length > 120 || description.length > 2000}
+          disabled={busy || !!titleValidationError || description.length > 2000}
           onPress={() => void save()} />
       </View>
     </KeyboardAvoidingView>
@@ -102,6 +123,8 @@ const createStyles = (colors: Palette) => StyleSheet.create({
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 18,
     backgroundColor: colors.surface, fontSize: 17, color: colors.text, minHeight: 62 },
   hint: { textAlign: 'right', fontSize: 12, color: colors.muted },
+  help: { fontSize: 14, lineHeight: 21, color: colors.muted },
+  invalidInput: { borderColor: colors.danger },
   description: { minHeight: 104 },
   statusSection: { gap: 8, marginBottom: 12 },
   status: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 14,

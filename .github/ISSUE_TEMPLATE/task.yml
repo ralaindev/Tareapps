@@ -1,0 +1,38 @@
+name: Tarea preparada para desarrollo
+description: Sub-issue autocontenida; asignar padre y Project antes de comenzar.
+title: "[Tarea] "
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Objetivo, padre y dependencias
+      description: Enlaza issue padre, Project, SDD/contrato y dependencias; usa también la relación nativa de parent.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Alcance y no alcance
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Contrato técnico y áreas afectadas
+      description: Datos, permisos, APIs, migraciones, errores y decisiones cerradas. No dependas de un chat anterior.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterios de aceptación
+      description: Resultados verificables y referencias AC existentes, sin renumerarlos.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verificación y riesgos
+      description: Comandos, tests, casos límite, fallos/rollback y evidencia manual necesaria.
+    validations:
+      required: true
