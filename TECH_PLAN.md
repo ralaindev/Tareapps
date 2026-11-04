@@ -2,6 +2,26 @@
 
 ## Continuación: GitHub y nube
 
+### Issue #11 — preparación de entornos
+
+Trabajo iniciado en `chore/11-prepare-environments` desde `origin/develop`. El
+inventario/documentación local está en [docs/ENVIRONMENTS.md](docs/ENVIRONMENTS.md)
+y `.env.example`; ambas son preparatorias y no conectan servicios. El repositorio
+no tiene secretos/variables de Actions; la app conserva SQLite local, sin SDK
+Supabase ni configuración EAS. Solo se ha verificado la sesión GitHub CLI. Cuentas,
+proyectos/región/planes de Supabase, Expo/EAS, Vercel, SMTP y dominio siguen sin
+verificar; las acciones remotas quedan bloqueadas hasta confirmar recursos y
+decisiones de usuario. Vercel se difiere por no ser necesario para el camino nativo
+de OTP por código. No hay despliegue, build ni recurso cloud autorizado/creado.
+
+Verificación de esta sesión: `npm run lint`, `npm run typecheck`, `npm test -- --ci`
+(81 tests/7 suites), `npm run test:review` (9 tests), `git diff --check` y reglas
+`.env`/`.env.example` correctas. El experimento Supabase local no se ejecutó en
+Windows porque el comando `docker` no está disponible; CI existente ejecuta el
+experimento efímero en Ubuntu. La issue #11 permanece abierta. Falta respuesta del
+usuario sobre cuentas/recursos existentes para completar el inventario y decidir el
+destino remoto; no se falsea ENV08 como terminado.
+
 ### Base de trabajo autorizada — pasos 1–4
 
 El usuario autorizó ejecutar la primera base completa y tomar decisiones iniciales

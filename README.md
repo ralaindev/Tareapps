@@ -6,6 +6,7 @@ Aplicación personal de tareas para **iOS y Android**, en español, con temas cl
 
 - [Flujo de desarrollo](docs/DEVELOPMENT.md): Project, issues/PRs, ramas y revisión local firmada.
 - [Contrato cloud v1](docs/CLOUD_CONTRACT.md) y [experimento aislado](experiments/cloud/README.md): base de v2, no nube integrada en la app.
+- [Entornos y servicios](docs/ENVIRONMENTS.md): inventario inicial, matriz de entornos, variables y pendientes de autorización para la issue #11.
 
 - [SDD.md](SDD.md): comportamiento aprobado, maquetas iniciales y ampliaciones con criterios AC01–AC36.
 - [AGENTS.md](AGENTS.md): punto de entrada para una sesión nueva, mapa de código y estado de continuación.
