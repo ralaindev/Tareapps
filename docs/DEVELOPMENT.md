@@ -48,7 +48,8 @@ resultado para los nuevos SHA. No firmar ni publicar un check de revisión artif
 La revisión es local y manual; no aparece como check automático obligatorio. El
 verde de GitHub corresponde a los controles de CI requeridos, no demuestra por sí
 solo que se haya completado la revisión ni la aceptación funcional. El workflow de
-firma anterior se retiró; el historial del piloto sigue disponible en la PR #8.
+firma anterior está desactivado en GitHub y se elimina de cada rama al integrar este
+cambio; el historial del piloto sigue disponible en la PR #8.
 ## Calidad y experimento cloud
 
 Node.js 24, npm/lockfile, lint, tipos y Jest; el verificador tiene tests criptográficos
