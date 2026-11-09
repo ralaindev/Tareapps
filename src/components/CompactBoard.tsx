@@ -12,11 +12,11 @@ const symbols = { pending: '○', in_progress: '◉', done: '✓' };
 
 export function CompactBoard({ bottomInset = 88 }: { bottomInset?: number }) {
   const { styles } = useThemedStyles(createStyles);
-  const { tasks, busy, creationRevision, removeWithUndo, scrollMemory } = useTasks();
+  const { tasks, visibleTasks, searchTerm, busy, creationRevision, removeWithUndo, boardScrollMemory: scrollMemory } = useTasks();
   const [initialOffset] = useState(() => ({ x: 0, y: scrollMemory.get('compact') }));
   const lastCreation = useRef(creationRevision);
   const list = useRef<SectionList<Task, TaskSection>>(null);
-  const sections = useMemo(() => STATUSES.map(status => ({ key: status, data: tasks.filter(task => task.status === status) })), [tasks]);
+  const sections = useMemo(() => STATUSES.map(status => ({ key: status, data: visibleTasks.filter(task => task.status === status) })), [visibleTasks]);
   useEffect(() => {
     if (lastCreation.current !== creationRevision) {
       lastCreation.current = creationRevision;
@@ -29,8 +29,9 @@ export function CompactBoard({ bottomInset = 88 }: { bottomInset?: number }) {
     contentOffset={initialOffset} scrollEventThrottle={32}
     onScroll={event => scrollMemory.set('compact', event.nativeEvent.contentOffset.y)}
     stickySectionHeadersEnabled showsVerticalScrollIndicator={false}
+    keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
     renderSectionHeader={({ section }) => <View style={styles.headerBackdrop} accessible accessibilityRole="header"
-      accessibilityLabel={`${STATUS_LABELS[section.key]}, ${section.data.length} tareas`}>
+      accessibilityLabel={`${STATUS_LABELS[section.key]}, ${section.data.length} ${searchTerm ? 'coincidencias' : 'tareas'}`}>
       <View style={[styles.header, section.key === 'pending' ? styles.pendingHeader
         : section.key === 'done' ? styles.doneHeader : styles.progressHeader]}>
         <Text accessible={false} style={[styles.symbol, section.key === 'pending' ? styles.pendingText
@@ -46,7 +47,8 @@ export function CompactBoard({ bottomInset = 88 }: { bottomInset?: number }) {
       onDelete={() => removeWithUndo(item.id)}
       onEdit={() => router.push({ pathname: '/task', params: { id: item.id } })} />}
     renderSectionFooter={({ section }) => <View style={[styles.sectionEnd, section.key === 'done' && styles.lastSection]}>
-      {section.data.length === 0 && <Text style={styles.empty}>Sin tareas en este estado</Text>}
+      {section.data.length === 0 && <Text style={styles.empty}>{searchTerm && tasks.some(task => task.status === section.key)
+        ? 'No hay resultados para esta búsqueda en este estado.' : 'Sin tareas en este estado'}</Text>}
       {section.key !== 'done' && <View style={styles.divider} />}
     </View>} />;
 }

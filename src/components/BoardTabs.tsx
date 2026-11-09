@@ -5,7 +5,8 @@ import { type Palette } from '../theme/tokens';
 import { useThemedStyles } from '../theme/ThemeProvider';
 import { useReducedMotion } from './Motion';
 
-export function BoardTabs({ selected, counts, position, offset, onSelect }: {
+export function BoardTabs({ selected, counts, position, offset, onSelect, searching = false }: {
+  searching?: boolean;
   selected: number; counts: number[]; position: Animated.Value; offset: Animated.Value;
   onSelect: (index: number) => void;
 }) {
@@ -24,7 +25,7 @@ export function BoardTabs({ selected, counts, position, offset, onSelect }: {
       transform: [{ translateX: reduced ? selected * tabWidth : Animated.multiply(Animated.add(position, offset), tabWidth) }],
     }]} />
     {STATUSES.map((status, index) => <Pressable key={status} accessibilityRole="tab"
-      accessibilityLabel={`${STATUS_LABELS[status]}, ${counts[index]} tareas`}
+      accessibilityLabel={`${STATUS_LABELS[status]}, ${counts[index]} ${searching ? 'coincidencias' : 'tareas'}`}
       accessibilityState={{ selected: selected === index }} onPress={() => onSelect(index)}
       style={({ pressed }) => [styles.tab, { width: tabWidth }, pressed && styles.pressed]}>
       <Text style={[styles.label, selected === index && styles.active]}>{STATUS_LABELS[status]}</Text>

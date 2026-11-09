@@ -53,6 +53,124 @@ async function mountBoard() {
 }
 
 describe('Board navigation', () => {
+  it('searches title and description in both views, labels match counts and clears without reloading', async () => {
+    const tasks: Task[] = [
+      { id: 'one', title: 'Revisión', description: '', status: 'pending', createdAt: 1, updatedAt: 1, columnEnteredAt: 1 },
+      { id: 'two', title: 'Compra', description: 'Revisión del café', status: 'done', createdAt: 1, updatedAt: 1, columnEnteredAt: 1 },
+      { id: 'three', title: 'Otra tarea', description: '', status: 'pending', createdAt: 1, updatedAt: 1, columnEnteredAt: 1 },
+    ];
+    jest.mocked(taskRepository.load).mockResolvedValue(tasks);
+    await mountBoard();
+    await fireEvent.changeText(screen.getByLabelText('Buscar tareas'), 'REVISION');
+    expect(screen.getByRole('tab', { name: 'Pendiente, 1 coincidencias' })).toBeTruthy();
+    expect(screen.queryByText('Otra tarea')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Cambiar a vista compacta' }));
+    expect(screen.getByLabelText('Buscar tareas')).toHaveProp('value', 'REVISION');
+    expect(screen.getByRole('header', { name: 'Hecho, 1 coincidencias' })).toBeTruthy();
+    expect(screen.getByText('Compra')).toBeTruthy();
+    expect(screen.queryByText('Revisión del café')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Limpiar búsqueda' }));
+    expect(screen.getByRole('header', { name: 'Pendiente, 2 tareas' })).toBeTruthy();
+    expect(screen.getByText('Otra tarea')).toBeTruthy();
+    expect(taskRepository.load).toHaveBeenCalledTimes(1);
+    expect(taskRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('distinguishes a filtered-out column from an actually empty column and empty board', async () => {
+    jest.mocked(taskRepository.load).mockResolvedValue([
+      { id: 'one', title: 'Comprar pan', description: '', status: 'pending', createdAt: 1, updatedAt: 1, columnEnteredAt: 1 },
+    ]);
+    await mountBoard();
+    await fireEvent.changeText(screen.getByLabelText('Buscar tareas'), 'ausente');
+    expect(screen.getByText('No hay resultados para esta búsqueda en este estado.')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Cambiar a vista compacta' }));
+    expect(screen.getAllByText('Sin tareas en este estado')).toHaveLength(2);
+    expect(screen.getByText('No hay resultados para esta búsqueda en este estado.')).toBeTruthy();
+    await cleanup();
+    jest.mocked(taskRepository.load).mockResolvedValue([]);
+    await mountBoard();
+    await fireEvent.changeText(screen.getByLabelText('Buscar tareas'), 'ausente');
+    expect(screen.getByText('Tu tablero empieza aquí')).toBeTruthy();
+    expect(screen.queryByText('No hay resultados para esta búsqueda en este estado.')).toBeNull();
+  });
+
+  it('isolates search scroll from the full board and restores it when switching views', async () => {
+    jest.mocked(taskRepository.load).mockResolvedValue(Array.from({ length: 20 }, (_, i): Task => ({
+      id: `task-${i}`, title: `Tarea ${i}`, description: '', status: 'pending', createdAt: 1, updatedAt: 1, columnEnteredAt: 1,
+    })));
+    await mountBoard();
+    const scrollEvent = (y: number) => ({ nativeEvent: { contentOffset: { x: 0, y },
+      contentSize: { width: 360, height: 3000 }, layoutMeasurement: { width: 360, height: 600 }, zoomScale: 1 } });
+    await fireEvent.scroll(screen.getByTestId('detailed-list-pending'), scrollEvent(400));
+    await fireEvent.changeText(screen.getByLabelText('Buscar tareas'), 'tarea');
+    expect(screen.getByTestId('detailed-list-pending').props.contentOffset.y).toBe(0);
+    await fireEvent.scroll(screen.getByTestId('detailed-list-pending'), scrollEvent(150));
+    await fireEvent.press(screen.getByRole('button', { name: 'Cambiar a vista compacta' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Cambiar a vista detallada' }));
+    expect(screen.getByTestId('detailed-list-pending').props.contentOffset.y).toBe(150);
+    await fireEvent.press(screen.getByRole('button', { name: 'Limpiar búsqueda' }));
+    expect(screen.getByTestId('detailed-list-pending').props.contentOffset.y).toBe(400);
+  });
+
+  it('recalculates search after edit, move, delete and undo without losing the query on board remount', async () => {
+    const original: Task = { id: 'one', title: 'Comprar café', description: '', status: 'pending', createdAt: 1, updatedAt: 1, columnEnteredAt: 1 };
+    const edited = { ...original, title: 'Comprar té', updatedAt: 2 };
+    const moved = { ...edited, status: 'done' as const, updatedAt: 3, columnEnteredAt: 3 };
+    jest.mocked(taskRepository.load).mockResolvedValue([original]);
+    jest.mocked(taskRepository.update).mockResolvedValue(edited);
+    jest.mocked(taskRepository.move).mockResolvedValue({ task: moved, previous: edited });
+    jest.mocked(taskRepository.removeWithSnapshot).mockResolvedValue(moved);
+    jest.mocked(taskRepository.restoreDeleted).mockResolvedValue({ ...moved, updatedAt: 4 });
+    function Commands() {
+      const { update, move } = useTasks();
+      return <><Button title="Editar para prueba" onPress={() => void update(original.id, edited)} />
+        <Button title="Mover para prueba" onPress={() => void move(original.id, 'done')} /></>;
+    }
+    const tree = (show: boolean) => <BoardPreferencesProvider><ThemeProvider><TasksProvider>
+      {show && <BoardScreen />}<Commands />
+    </TasksProvider></ThemeProvider></BoardPreferencesProvider>;
+    const view = await render(tree(true));
+    await fireEvent.changeText(screen.getByLabelText('Buscar tareas'), 'cafe');
+    await fireEvent.press(screen.getByRole('button', { name: 'Editar para prueba' }));
+    expect(screen.getByRole('tab', { name: 'Pendiente, 0 coincidencias' })).toBeTruthy();
+    await view.rerender(tree(false));
+    await view.rerender(tree(true));
+    expect(screen.getByLabelText('Buscar tareas')).toHaveProp('value', 'cafe');
+    await fireEvent.changeText(screen.getByLabelText('Buscar tareas'), 'te');
+    await fireEvent.press(screen.getByRole('button', { name: 'Mover para prueba' }));
+    expect(screen.getByRole('tab', { name: 'Hecho, 1 coincidencias' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Cambiar a vista compacta' }));
+    await fireEvent(screen.getByRole('button', { name: /^Editar: Comprar té/ }), 'accessibilityAction', { nativeEvent: { actionName: 'delete' } });
+    expect(screen.getByRole('header', { name: 'Hecho, 0 coincidencias' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Deshacer' }));
+    expect(screen.getByRole('header', { name: 'Hecho, 1 coincidencias' })).toBeTruthy();
+    await cleanup();
+    await mountBoard();
+    expect(screen.getByLabelText('Buscar tareas')).toHaveProp('value', '');
+  });
+
+  it('keeps the selected state during search and preserves the query when creating a non-matching task', async () => {
+    const created: Task = { id: 'new-search', title: 'Comprar pan', description: '', status: 'pending', createdAt: 10, updatedAt: 10, columnEnteredAt: 10 };
+    jest.mocked(taskRepository.create).mockResolvedValue(created);
+    function CreateCommand() {
+      const { create } = useTasks();
+      return <Button title="Crear para prueba" onPress={() => void create(created)} />;
+    }
+    await render(<BoardPreferencesProvider><ThemeProvider><TasksProvider>
+      <BoardScreen /><CreateCommand />
+    </TasksProvider></ThemeProvider></BoardPreferencesProvider>);
+    await fireEvent.press(screen.getByRole('tab', { name: 'Hecho, 0 tareas' }));
+    await fireEvent.changeText(screen.getByLabelText('Buscar tareas'), 'cafe');
+    expect(screen.getByRole('tab', { name: 'Hecho, 0 coincidencias', selected: true })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Crear para prueba' }));
+    expect(screen.getByLabelText('Buscar tareas')).toHaveProp('value', 'cafe');
+    expect(screen.getByRole('tab', { name: 'Pendiente, 0 coincidencias', selected: true })).toBeTruthy();
+    expect(screen.queryByText('Comprar pan')).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Limpiar búsqueda' }));
+    expect(screen.getByRole('tab', { name: 'Pendiente, 1 tareas', selected: true })).toBeTruthy();
+    expect(screen.getByText('Comprar pan')).toBeTruthy();
+  });
+
   it('accepts a completed swipe without commanding a second page transition', async () => {
     const pager = await mountBoard();
     await fireEvent(pager, 'pageSelected', { nativeEvent: { position: 1 } });

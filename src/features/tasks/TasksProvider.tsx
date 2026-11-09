@@ -4,6 +4,7 @@ import { STATUS_LABELS, type Task, type TaskInput, type TaskStatus } from './mod
 import { tasksReducer } from './reducer';
 import { taskRepository } from './repository';
 import { BoardScrollMemory } from './scrollMemory';
+import { filterTasks, normalizeSearch } from './search';
 
 type UndoSnapshot = {
   kind: 'move';
@@ -13,6 +14,11 @@ type UndoSnapshot = {
 
 interface TasksContextValue {
   tasks: Task[];
+  visibleTasks: Task[];
+  searchQuery: string;
+  searchTerm: string;
+  setSearchQuery: (query: string) => void;
+  boardScrollMemory: BoardScrollMemory;
   loading: boolean;
   error: string | null;
   busy: boolean;
@@ -45,6 +51,12 @@ export function TasksProvider({ children, repository = taskRepository }: {
   const [selectedColumn, setSelectedColumn] = useState(0);
   const [creationRevision, setCreationRevision] = useState(0);
   const [scrollMemory] = useState(() => new BoardScrollMemory());
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchTerm = normalizeSearch(searchQuery);
+  const visibleTasks = useMemo(() => filterTasks(tasks, searchTerm), [tasks, searchTerm]);
+  // Each new search starts at the top; switching views preserves that search's offsets.
+  const { memory: searchScrollMemory } = useMemo(() => ({ term: searchTerm, memory: new BoardScrollMemory() }), [searchTerm]);
+  const boardScrollMemory = searchTerm ? searchScrollMemory : scrollMemory;
   // Unknown accessibility state keeps Undo available until the query completes.
   const [screenReader, setScreenReader] = useState<boolean | null>(null);
   const [snapshot, setSnapshot] = useState<UndoSnapshot | null>(null);
@@ -138,11 +150,12 @@ export function TasksProvider({ children, repository = taskRepository }: {
   const create = useCallback((input: TaskInput) => run(async () => {
     const task = await repository.create(input);
     scrollMemory.resetForCreation();
+    searchScrollMemory.resetForCreation();
     dispatch({ type: 'upsert', task });
     setSelectedColumn(0);
     setCreationRevision(revision => revision + 1);
     return task;
-  }), [repository, run, scrollMemory]);
+  }), [repository, run, scrollMemory, searchScrollMemory]);
 
   const update = useCallback((id: string, input: TaskInput) => run(async () => {
     const task = await repository.update(id, input);
@@ -193,13 +206,14 @@ export function TasksProvider({ children, repository = taskRepository }: {
   }), [repository, run, dismissUndo]);
 
   const value = useMemo<TasksContextValue>(() => ({
-    tasks, loading, error, busy, reload, create, update, remove, removeWithUndo, move, undo,
+    tasks, visibleTasks, searchQuery, searchTerm, setSearchQuery, boardScrollMemory,
+    loading, error, busy, reload, create, update, remove, removeWithUndo, move, undo,
     undoNotice: snapshot ? {
       taskId: snapshot.previous.id,
       message: snapshot.kind === 'delete' ? 'Tarea eliminada' : 'Tarea movida',
     } : null,
     dismissUndo, selectedColumn, setSelectedColumn, creationRevision, scrollMemory,
-  }), [tasks, loading, error, busy, reload, create, update, remove, removeWithUndo, move, undo, snapshot, dismissUndo, selectedColumn, creationRevision, scrollMemory]);
+  }), [tasks, visibleTasks, searchQuery, searchTerm, boardScrollMemory, loading, error, busy, reload, create, update, remove, removeWithUndo, move, undo, snapshot, dismissUndo, selectedColumn, creationRevision, scrollMemory]);
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;
 }

@@ -421,3 +421,43 @@ Todos los criterios siguientes son **objetivos de la base v2, pendientes de impl
 - **Producción futura:** AC38+ se cierra por entregas con evidencia servidor/cliente y validación en dispositivos cuando corresponda. Ni tests unitarios, ni un run CI de la app local, ni exportar JavaScript acreditan nube integrada o dispositivos.
 
 El detalle normativo del protocolo futuro v1, alcance reducido del experimento y pendientes de producción está en [docs/CLOUD_CONTRACT.md](docs/CLOUD_CONTRACT.md).
+
+## 17. Búsqueda local — issue #15
+
+Primera entrega aprobada: búsqueda en título y descripción en ambas vistas, sin nube,
+asignaciones, cambios de esquema ni filtros adicionales. Esta ampliación incorpora la
+búsqueda excluida del alcance inicial de la sección 1. AC38–AC48 siguen siendo objetivos
+cloud, no requisitos implementados por esta entrega.
+
+- Campo «Buscar tareas» bajo la cabecera, fuera de la lista, sin foco automático.
+  Filtra al escribir y permite limpiar con una acción accesible de al menos 48 × 48.
+- Coincidencia parcial de una frase literal en título **o** descripción; no concatena
+  campos, no tokeniza ni interpreta expresiones regulares. Ignora mayúsculas y marcas
+  diacríticas Unicode (incluidas tildes, diéresis y la de ñ). Recorta espacios exteriores;
+  conserva espacios interiores. Vacío o solo espacios equivale a no filtrar.
+- Las pestañas existentes filtran por estado en Detallada. No se añade otro selector.
+  Compacta mantiene los tres grupos con tarjetas de solo título, aunque una coincidencia
+  proceda de la descripción. Los contadores indican coincidencias durante la búsqueda,
+  también en sus etiquetas accesibles; al limpiar recuperan los totales.
+- Una columna con tareas pero sin coincidencias muestra «No hay resultados para esta
+  búsqueda en este estado». Una columna realmente vacía conserva su mensaje habitual.
+  Se conserva la selección de columna, el orden canónico, los datos y Deshacer.
+- La consulta vive en memoria durante la sesión del proveedor: cambiar de vista o abrir
+  y cerrar el formulario no la borra. Reiniciar el proceso la vacía. Crear conserva la
+  consulta; una tarea nueva que no coincida no será visible hasta limpiar o cambiarla.
+- Cada consulta normalizada nueva empieza en el inicio de sus listas; alternar vistas
+  conserva sus offsets. Limpiar recupera el scroll del tablero completo. Crear reinicia
+  Pendiente y Compacta tanto para el tablero completo como para la búsqueda actual.
+- El teclado permite consultar los resultados y accionar los controles; arrastrar la
+  lista lo descarta. No se anuncian resultados por cada pulsación ni se roba el foco.
+
+| ID | Resultado observable |
+| --- | --- |
+| AC49 | Buscar una frase parcial encuentra tareas por título o descripción ignorando mayúsculas y diacríticos, sin alterar datos ni orden; solo espacios no filtra. |
+| AC50 | Ambas vistas comparten consulta y coincidencias. Detallada conserva pestañas/estado seleccionado; Compacta conserva los tres grupos y tarjetas de solo título. Los contadores accesibles distinguen coincidencias de totales. |
+| AC51 | Sin coincidencias se distingue de un estado sin tareas; Limpiar búsqueda restaura el contenido completo y los totales sin recargar SQLite. |
+| AC52 | La consulta se conserva al alternar vistas y volver del formulario, pero no al reiniciar. Buscar no sustituye el scroll no filtrado; las mutaciones confirmadas recalculan resultados y conservan las reglas de Deshacer. |
+
+Verificación: pruebas de función pura y de integración React con capa nativa/repositorios
+simulados, más lint y tipos. Teclado, texto ampliado, foco y lector en iOS/Android requieren
+validación física separada; la auditoría #19 permanece pausada.

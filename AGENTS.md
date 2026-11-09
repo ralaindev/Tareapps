@@ -10,6 +10,25 @@
 
 ## Producto y estado actual
 
+- Prioridad acordada el 2026-11-07: MVP con SQLite local, sin cuentas/nube.
+  Continuar #15; después valorar #18 y #14. #10/#11/#16 y #19 aplazadas.
+  Reejecución Android del día 7 disponible en el informe de #15: título/descripción,
+  regreso del formulario, edición, alta bajo filtro, movimiento/Deshacer,
+  borrado por pan/Deshacer y reinicio del proceso comprobados en Expo Go.
+  Lint/tipos y 89 tests correctos; sin cambios funcionales nuevos ni commits/push.
+  Pendientes: scroll largo nativo, iOS y aceptación completa; accesibilidad aplazada.
+
+- Issue #15: búsqueda local en desarrollo en `feat/15-task-search`, sin commits/push
+  autorizados. Sección 17 de SDD: AC49–AC52, consulta de sesión sobre título/descripción,
+  pestañas como filtro por estado y scroll filtrado independiente. No modifica SQLite.
+  Implementada localmente: lint/tipos correctos y 89 tests/8 suites. Smoke test Android
+  en Expo Go correcto (búsqueda/ambas vistas/tema/teclado); no aceptación nativa completa.
+  Informe: `D:\tools\tareapps-mobile\artifacts\15-task-search\INFORME.md` (2026-11-06),
+  con seis capturas del día 5 e inspección/automatizadas del día 6. Reejecución Android
+  del día 6 bloqueada por memoria comprometida del host; no hubo capturas nuevas.
+- Auditoría nativa #19 pausada por el usuario; plan guardado en su comentario
+  https://github.com/ralaindev/Tareapps/issues/19#issuecomment-6660599182.
+
 - El usuario ha elegido **Tareapps** como nombre del repositorio remoto. El nombre visible de la app sigue siendo **En foco**: no renombrarlo sin una petición específica.
 - App Expo/React Native para **iPhone y Android**, en español. Actualmente es local y offline: no tiene usuarios, backend ni sincronización.
 - Estados reales del código: **Pendiente, En progreso y Hecho**, con códigos `pending`, `in_progress`, `done`. «En curso» en los primeros bocetos es una denominación anterior.
@@ -70,6 +89,15 @@ __tests__/                        # 7 suites de dominio, SQL, proveedores, UI, g
 
 ## Herramientas y comprobaciones
 
+- Entorno Android local instalado en **D:\tools\tareapps-mobile** (petición del usuario:
+  instalaciones siempre en D:). Cargar `. D:\tools\tareapps-mobile\env.ps1` antes de
+  usar SDK/Java/agent-device para que cachés, AVD y temporales configurables sigan en D:.
+  Guía local y evidencia: `D:\tools\tareapps-mobile\README.md`. AVD
+  `Tareapps_Pixel7_API36`, Android 16/API36; Expo Go 58.0.5; agent-device 0.21.36.
+  WHPX utilizable sin cambios de Windows. Metro local: usar Node con
+  `--dns-result-order=ipv4first`, puerto 8081 y `adb reverse`; no exponer en LAN.
+  Smoke test y capturas de búsqueda realizados; no equivale a auditoría #19 ni iOS.
+
 - **npm + package-lock.json**. Usar **Node.js 24** para las pruebas: el repositorio ejecuta SQL real en memoria mediante `node:sqlite`, con el puente Expo simulado.
 - Base actual: Expo SDK 58, React 19.3, React Native 0.88 y TypeScript estricto. Confirmar versiones en `package.json`, no asumir que siguen iguales.
 - Antes de tocar APIs Expo/EAS/React Native: leer versión instalada, consultar `https://docs.expo.dev/versions/v<major>.0.0/` y `https://docs.expo.dev/llms.txt`, y seguir los enlaces específicos. No confiar en APIs recordadas de otros SDK.
@@ -90,6 +118,22 @@ npx expo export --platform ios --platform android --max-workers 2
 ```
 
 - Ejecutar **lint y typecheck** antes de cerrar una tarea; tests cuando apliquen. Añadir pruebas de reglas, fallos o regresiones reales, no de adornos visuales.
+- **Norma de cierre:** después de cada implementación/corrección, probar SIEMPRE en
+  local el flujo afectado en la aplicación ejecutándose, no solo con tests/dobles.
+  Usar el entorno Android y agent-device disponible; iOS requiere un entorno Apple
+  verificado. Repetir la prueba tras cualquier corrección. No reactivar ni dar por
+  cerrada la auditoría #19 por ejecutar una prueba puntual de otra tarea.
+- Preparar un **informe con capturas reales inspeccionadas**, enlazando cada caso con
+  su criterio, pasos, esperado/observado y resultado. Registrar fecha, SHA más cambios
+  sin commit, dispositivo/sistema/cliente, comandos y pendientes. Usar vídeo si la
+  secuencia no puede demostrarse con imágenes y no atribuir a capturas pruebas de
+  reglas internas que no muestran. Guardar informe y evidencias de esta máquina en
+  `D:\tools\tareapps-mobile\artifacts\<tarea>\`, o en la ubicación de verificación
+  ya acordada; facilitar sus rutas en la entrega. No subirlas sin autorización ni
+  incluir datos personales/secretos.
+- Si faltan medios o una prueba falla, registrar bloqueo y no afirmar validación
+  completa. Para documentación/configuración/backend sin resultado visual, explicar
+  por qué no aplican capturas de interfaz y aportar comprobaciones locales adecuadas.
 - Última validación de esta base: **81 tests en 7 suites**, lint/tipos correctos y CI real de backend experimental. Exportaciones JS de iOS/Android de la base anterior correctas; no se han repetido tras el formulario. No equivale a build nativo ni validación física.
 - Hubo un fallo de memoria al ejecutar comprobaciones en paralelo. Si se repite, ejecutarlas secuencialmente y en PowerShell usar `$env:NODE_OPTIONS="--max-old-space-size=1024"`; exportar con `--max-workers 2`. No cambiar ajustes globales de memoria por defecto.
 - Expo Doctor en este traspaso: **19/20**, con **10 paquetes con parches pendientes**; no se actualizaron dependencias. Revaluar antes de actualizar y no asumir una cifra histórica como aprobación actual.
