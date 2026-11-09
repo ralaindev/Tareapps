@@ -14,7 +14,7 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
 
 ## Ramas e integración
 
-- `main`: estable y fuente confiable del verificador de revisiones.
+- `main`: rama estable; la retirada del antiguo workflow de firma se completa al integrar el cambio en ella.
 - `develop`: integración; las ramas `feat/<slug>` y `fix/<slug>` usan nombres descriptivos
   sin número de issue y parten de `origin/develop` actualizado, con worktree/directorio
   independiente por tarea paralela. La issue se enlaza en la PR, no en el nombre de rama.

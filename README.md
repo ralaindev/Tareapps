@@ -4,7 +4,7 @@ Aplicación personal de tareas para **iOS y Android**, en español, con temas cl
 
 ## Documentación
 
-- [Flujo de desarrollo](docs/DEVELOPMENT.md): Project, issues/PRs, ramas y revisión local firmada.
+- [Flujo de desarrollo](docs/DEVELOPMENT.md): Project, issues/PRs, ramas y revisión local con comentario.
 - [Contrato cloud v1](docs/CLOUD_CONTRACT.md) y [experimento aislado](experiments/cloud/README.md): base de v2, no nube integrada en la app.
 
 - [SDD.md](SDD.md): comportamiento aprobado, maquetas iniciales y ampliaciones con criterios AC01–AC36.
@@ -19,7 +19,7 @@ La aplicación está implementada. Estos documentos recogen su especificación, 
 
 **Repositorio público:** [ralaindev/Tareapps](https://github.com/ralaindev/Tareapps). Se migró el historial corregido a un repositorio independiente para no publicar los commits antiguos con correo personal. Los commits usan `noreply` como autor y committer; los identificadores anteriores no son accesibles desde este repositorio. El repositorio original se conserva privado y no debe publicarse.
 
-Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. `main`/`develop` son las ramas persistentes; el trabajo parte de `develop` en ramas temporales. Hay Project, issues padre/sub-issues y revisión local firmada, descritos en la guía de desarrollo. La base SDD v2/contrato y experimento Supabase no conectan todavía la app a nube; no hay despliegues autorizados.
+Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. `main`/`develop` son las ramas persistentes; el trabajo parte de `develop` en ramas temporales. Hay Project, issues padre/sub-issues y revisión local con comentario, descritos en la guía de desarrollo. La base SDD v2/contrato y experimento Supabase no conectan todavía la app a nube; no hay despliegues autorizados.
 
 ## Funcionalidades
 
