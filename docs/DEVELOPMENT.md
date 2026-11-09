@@ -40,10 +40,11 @@ contratos, pruebas y límites de integración; además evaluar responsabilidades
 cohesión, acoplamiento, duplicación, patrones del proyecto y principios como SOLID
 según el contexto, sin introducir complejidad o abstracciones gratuitas.
 
-Publicar en la PR un comentario con HEAD y base revisados, hallazgos concretos,
-impacto, cambios necesarios, sugerencias y límites. Distinguir bloqueos reales de
-mejoras opcionales. Después de corregir, revisar de nuevo los cambios y comentar el
-resultado para los nuevos SHA. No firmar ni publicar un check de revisión artificial.
+Publicar un comentario en la PR solo si un hallazgo requiere una decisión o revisión
+del usuario; incluir HEAD y base, impacto y decisión necesaria. Corregir con autonomía
+lo autorizado y volver a revisar, sin comentarios de confirmación o trámite. Conservar
+el resultado y los límites en el informe local. No firmar ni publicar un check de
+revisión artificial.
 
 La revisión es local y manual; no aparece como check automático obligatorio. El
 verde de GitHub corresponde a los controles de CI requeridos, no demuestra por sí

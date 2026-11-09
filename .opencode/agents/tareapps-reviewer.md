@@ -26,6 +26,6 @@ No exijas cosmética arbitraria; bloquea fallos concretos con ubicación e impac
 
 Devuelve OK o CHANGES_REQUIRED, lista de hallazgos (blocking/suggestion), evidencia
 real y límites. Si falta diff/contexto o no puedes revisarlo completo, no devuelvas OK.
-El implementador publica un resumen en la PR, con los SHA revisados, hallazgos,
-acciones y límites, sin firma. Si hay correcciones, se revisa el nuevo diff y se
-actualiza con un nuevo comentario; no se simula un check automático de revisión.
+El implementador solo comenta en la PR si un hallazgo requiere decisión o revisión
+del usuario. Si hay correcciones, se revisa el nuevo diff y se conserva el resultado
+localmente sin comentarios de trámite; no se simula un check automático de revisión.
