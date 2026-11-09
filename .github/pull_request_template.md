@@ -8,7 +8,7 @@
 ## Verificación real
 - [ ] Lint, tipos y tests correctos
 - [ ] Secrets y Cloud experiment correctos
-- [ ] Revisión del cambio y riesgos realizada cuando corresponda; firma no obligatoria
+- [ ] Revisión local de errores, diseño y riesgos resumida en un comentario de la PR
 - [ ] Limitaciones de dispositivo/integración indicadas, sin afirmar evidencia inexistente
 
 ## Riesgos y reversión
