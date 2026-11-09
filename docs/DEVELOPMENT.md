@@ -20,7 +20,7 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
   independiente por tarea paralela. La issue se enlaza en la PR, no en el nombre de rama.
 - PR normal contra `develop`, issue + padre + Project enlazados. Una entrega revisada
   integra `develop` en `main` por PR, conservando `develop`.
-- Checks requeridos: **Lint, types and tests**, **Secrets**, **Cloud experiment**, **AI Review**.
+- Checks requeridos: **Lint, types and tests**, **Secrets** y **Cloud experiment**.
   Rama actualizada con la base, sin force-push ni borrado de `main`/`develop`, reglas
   aplicadas también a administradores. No usar `--admin` para saltarlas.
 - Al fusionar, GitHub borra automáticamente la rama de trabajo. Si la fuente es
@@ -32,9 +32,16 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
   Para PRs a `develop`, enlazar en Development y cerrar las issues completadas tras
   merge; el parent se cierra cuando todas las sub-issues están verificadas, no al abrir PR.
 
-## Revisión IA local obligatoria y firma
+## Revisión IA y firma: mecanismo histórico, no obligatorio
 
-No se contrata proveedor IA remoto. Usar `tareapps-reviewer`, agente local de solo
+Desde el 2026-11-09, por decisión del propietario que trabaja solo, `AI Review`
+no es un check requerido en `main` ni en `develop`. No es necesario firmar ni
+publicar una atestación para fusionar. Siguen vigentes los demás checks y las
+protecciones de rama. La revisión independiente puede utilizarse cuando aporte valor.
+El workflow y el procedimiento descritos a continuación se conservan como registro
+histórico; su resultado no condiciona el merge mientras no sea un check requerido.
+
+No se contrata proveedor IA remoto. El procedimiento anterior utilizaba `tareapps-reviewer`, agente local de solo
 lectura en `.opencode/agents/`, en una sesión separada del implementador. Reiniciar
 OpenCode al instalar su definición; no cambia el agente por defecto AIran.
 
