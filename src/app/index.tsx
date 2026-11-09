@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BoardViewToggle } from '../components/BoardViewToggle';
 import { Button } from '../components/Button';
 import { CompactBoard } from '../components/CompactBoard';
 import { DetailedBoard } from '../components/DetailedBoard';
 import { FadeIn } from '../components/Motion';
+import { TaskSearch } from '../components/TaskSearch';
 import { useBoardPreferences } from '../features/preferences/BoardPreferencesProvider';
 import { useTasks } from '../features/tasks/TasksProvider';
 import { type Palette } from '../theme/tokens';
@@ -13,13 +14,14 @@ import { useThemedStyles } from '../theme/ThemeProvider';
 
 export default function BoardScreen() {
   const { colors, styles } = useThemedStyles(createStyles);
-  const { loading, error, busy, reload, undo, undoNotice, dismissUndo } = useTasks();
+  const { loading, error, busy, reload, undo, undoNotice, dismissUndo, searchTerm } = useTasks();
   const preferences = useBoardPreferences();
   const initialLoading = loading || preferences.loading;
   const { fontScale } = useWindowDimensions();
   const bottomInset = Math.max(88, Math.round(88 * fontScale));
 
   return <SafeAreaView style={styles.screen}>
+    <KeyboardAvoidingView style={styles.content} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <View style={styles.header}>
       <Text accessibilityRole="header" style={styles.heading}>Mi tablero</Text>
       <BoardViewToggle value={preferences.viewMode} disabled={preferences.loading || preferences.saving}
@@ -30,12 +32,13 @@ export default function BoardScreen() {
         Alert.alert('No se pudo cambiar de vista', 'No se ha podido guardar la preferencia. Inténtalo de nuevo.'))} />
     </View>
     {preferences.error && <Text accessibilityRole="alert" style={styles.preferenceError}>{preferences.error}</Text>}
+    {!initialLoading && !error && <TaskSearch />}
     <View style={styles.content} testID="board-content">
     {initialLoading ? <View style={styles.center}><ActivityIndicator color={colors.primary} accessibilityLabel="Cargando tablero" /></View>
       : error ? <View style={styles.center}><Text style={styles.error}>{error}</Text>
         <Button label="Reintentar" onPress={() => void reload()} disabled={busy} /></View>
         : <FadeIn key={preferences.viewMode} style={styles.content}>
-          {preferences.viewMode === 'compact' ? <CompactBoard bottomInset={bottomInset} /> : <DetailedBoard bottomInset={bottomInset} />}
+          {preferences.viewMode === 'compact' ? <CompactBoard key={searchTerm} bottomInset={bottomInset} /> : <DetailedBoard key={searchTerm} bottomInset={bottomInset} />}
         </FadeIn>}
       {undoNotice && <FadeIn key={undoNotice.taskId} style={styles.notice}>
         <Text style={styles.noticeText}>{undoNotice.message}</Text>
@@ -50,6 +53,7 @@ export default function BoardScreen() {
     <View style={styles.footer} testID="board-footer">
       <Button label="＋ Nueva tarea" disabled={initialLoading || !!error || busy} onPress={() => router.push('/task')} />
     </View>
+    </KeyboardAvoidingView>
   </SafeAreaView>;
 }
 

@@ -2,6 +2,65 @@
 
 ## Continuación: GitHub y nube
 
+### Prioridad vigente — MVP local, 2026-11-07
+
+El usuario prioriza el MVP con la base SQLite de la app. Se retoma #15 sin nube ni
+cambios de esquema; #10/#11/#16 quedan aplazadas, al igual que la auditoría #19.
+Después de #15 se valorarán #18 y #14; checklists, archivo y recurrencia no bloquean
+esta primera entrega local. No se modifica el significado de AC38–AC48: siguen
+siendo objetivos futuros, fuera de esta entrega.
+
+Revisión de #15 sin nuevas modificaciones funcionales: lint/tipos y 89 tests/8 suites
+correctos el día 7. Android/Expo Go ejecutado con SQLite real: búsqueda por título y
+descripción, cambio de vista, regreso del formulario, edición que deja de coincidir,
+alta bajo filtro, mover/Deshacer, borrado por pan/Deshacer y reinicio con consulta
+vacía y datos persistentes. Capturas inspeccionadas y vídeo de borrado/Deshacer en
+el informe existente `D:\tools\tareapps-mobile\artifacts\15-task-search\INFORME.md`,
+sección 8. Quedan pendientes scroll largo nativo e iOS; no cierre integral ni remoto.
+
+### Issue #15 — búsqueda local aprobada
+
+Rama `feat/15-task-search` desde `origin/develop`. Alcance de la sección 17 del SDD,
+AC49–AC52: frase literal sobre título/descripción, normalización Unicode NFD sin
+diacríticos y minúsculas, pestañas como filtro de estado en Detallada y tres grupos
+en Compacta. Sin dependencias, migración ni acceso a nube.
+
+Implementación y verificación:
+- Función pura `src/features/tasks/search.ts` que filtra sin ordenar ni mutar.
+- Consulta y resultados derivados en `TasksProvider`, solo en memoria; no reemplazan
+  las tareas canónicas que usan los comandos y el formulario.
+- `TaskSearch` compartido fuera de listas; contadores accesibles y vacíos contextuales.
+- Scroll filtrado independiente, reiniciado por consulta normalizada y conservado al
+  alternar vistas; limpiar restaura el scroll no filtrado.
+- Tests de coincidencias y regresiones: cambio de vista, edición que deja de coincidir,
+  movimiento, borrado/Deshacer, remonte del tablero y reinicio del proveedor.
+- Verificación local en Windows/Node.js 24: lint sin avisos, tipos y **89 tests en
+  8 suites** correctos; `git diff --check` sin errores de whitespace. Son 8 tests nuevos
+  respecto a la base de 81. No se han ejecutado exportaciones, builds ni pruebas nativas.
+  La validación nativa no se sustituye por tests. #19 está pausada y su plan se conserva:
+  https://github.com/ralaindev/Tareapps/issues/19#issuecomment-6660599182.
+
+No se autorizan commits, push, PR ni despliegues por esta implementación local.
+
+**Evidencia posterior — entorno Android, 2026-11-05:** instalado SDK/AVD, Java y
+agent-device bajo `D:\tools\tareapps-mobile`, sin configuración global de PATH ni
+cambios de Windows. WHPX utilizable. Smoke test con Pixel 7 emulado, Android 16/API36
+y Expo Go 58.0.5: alta ficticia, `REVISION` por título, `cafe` por descripción,
+Detallada/Compacta, oscuro, vacío filtrado, limpiar y captura con Gboard visible.
+Interacciones y snapshots/capturas reales, no dobles de UI. Guía y evidencia local en
+`D:\tools\tareapps-mobile\README.md` y `artifacts/`. No es un build propio ni cierre
+completo de AC49–AC52/#19: lector, texto ampliado, listas largas y demás regresiones
+nativas e iOS siguen pendientes. No se ha instalado Maestro ni contratado servicios.
+
+**Informe consolidado, 2026-11-06:**
+`D:\tools\tareapps-mobile\artifacts\15-task-search\INFORME.md`, con seis capturas
+reales del día 5 inspeccionadas y manifest SHA-256 de fuentes/capturas. Lint/tipos
+y 89 tests/8 suites repetidos correctamente el día 6. Nueva pasada Android
+bloqueada por memoria comprometida de Windows: AVD con 3072 MB no pudo arrancar;
+intento temporal con 1536 MB sin dispositivo utilizable confirmado. Sin capturas
+nuevas; no se cambió código funcional, Windows ni datos para resolverlo. Retomar
+reejecución nativa cuando haya recursos; #19 sigue pausada.
+
 ### Base de trabajo autorizada — pasos 1–4
 
 El usuario autorizó ejecutar la primera base completa y tomar decisiones iniciales

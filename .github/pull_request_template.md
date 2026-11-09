@@ -8,7 +8,7 @@
 ## Verificación real
 - [ ] Lint, tipos y tests correctos
 - [ ] Secrets y Cloud experiment correctos
-- [ ] Revisor local independiente: informe firmado del HEAD y base actuales (AI Review)
+- [ ] Revisión local de errores, diseño y riesgos; comentar solo si requiere al usuario
 - [ ] Limitaciones de dispositivo/integración indicadas, sin afirmar evidencia inexistente
 
 ## Riesgos y reversión

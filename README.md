@@ -4,7 +4,7 @@ Aplicación personal de tareas para **iOS y Android**, en español, con temas cl
 
 ## Documentación
 
-- [Flujo de desarrollo](docs/DEVELOPMENT.md): Project, issues/PRs, ramas y revisión local firmada.
+- [Flujo de desarrollo](docs/DEVELOPMENT.md): Project, issues/PRs, ramas y revisión local.
 - [Contrato cloud v1](docs/CLOUD_CONTRACT.md) y [experimento aislado](experiments/cloud/README.md): base de v2, no nube integrada en la app.
 
 - [SDD.md](SDD.md): comportamiento aprobado, maquetas iniciales y ampliaciones con criterios AC01–AC36.
@@ -19,9 +19,16 @@ La aplicación está implementada. Estos documentos recogen su especificación, 
 
 **Repositorio público:** [ralaindev/Tareapps](https://github.com/ralaindev/Tareapps). Se migró el historial corregido a un repositorio independiente para no publicar los commits antiguos con correo personal. Los commits usan `noreply` como autor y committer; los identificadores anteriores no son accesibles desde este repositorio. El repositorio original se conserva privado y no debe publicarse.
 
-Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. `main`/`develop` son las ramas persistentes; el trabajo parte de `develop` en ramas temporales. Hay Project, issues padre/sub-issues y revisión local firmada, descritos en la guía de desarrollo. La base SDD v2/contrato y experimento Supabase no conectan todavía la app a nube; no hay despliegues autorizados.
+Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. `main`/`develop` son las ramas persistentes; el trabajo parte de `develop` en ramas temporales. Hay Project, issues padre/sub-issues y revisión local, descritos en la guía de desarrollo. La base SDD v2/contrato y experimento Supabase no conectan todavía la app a nube; no hay despliegues autorizados.
 
 ## Funcionalidades
+
+- Búsqueda local por frase en título o descripción, sin distinguir mayúsculas ni tildes.
+  Compartida entre Detallada y Compacta; las pestañas siguen filtrando por estado.
+  Durante la búsqueda los contadores representan coincidencias. Limpiar restaura
+  totales/contenido y scroll del tablero completo. La consulta se conserva al volver
+  del formulario, pero no al reiniciar la app. Crear no la borra: si la nueva tarea no
+  coincide, hay que limpiar o cambiar la consulta para verla. No requiere nube.
 
 - Una columna visible, con pestañas y contadores; cambio mediante pulsación o swipe horizontal.
 - Cabecera mínima con «Mi tablero» y un único icono que alterna Detallada/Compacta. El icono representa la vista de destino; mantenerlo pulsado muestra su nombre. Detallada conserva columna, descripción y acciones; Compacta agrupa los tres estados con tarjetas de solo título.
@@ -88,11 +95,39 @@ Los scripts `android` e `ios` actuales invocan el servidor de Expo con la plataf
 
 ## Comprobaciones de calidad
 
+**Reejecución del 2026-11-07 (#15, MVP local):** lint, tipos y 89 tests/8 suites
+correctos. Prueba real Android/Expo Go ampliada con regreso del formulario, edición,
+alta con filtro activo, mover/Deshacer, borrado por arrastre lento/Deshacer y reinicio
+del proceso (consulta vacía, tareas persistentes). Informe y capturas nuevas en
+`D:\tools\tareapps-mobile\artifacts\15-task-search\INFORME.md`, sección 8.
+No es aceptación completa: scroll largo nativo e iOS pendientes; auditoría de
+accesibilidad aplazada. Sin nube, cambios de esquema, commit ni push.
+
+**Cambio local de búsqueda (#15):** lint sin avisos, tipos y **89 tests en 8 suites**
+correctos con Node.js 24 en Windows. Sin commits/push ni nueva CI remota. Smoke test
+posterior en Pixel 7 emulado, Android 16/API36 y Expo Go 58.0.5: alta, búsqueda por
+título/descripción ignorando tildes, ambas vistas, oscuro, sin resultados, limpiar y
+captura con teclado Gboard. No se han repetido exportaciones ni ejecutado builds
+propios; no acredita iOS, dispositivo físico ni aceptación completa de accesibilidad.
+Los resultados históricos de la base se conservan debajo.
+
+En este equipo, las herramientas Android/automatización están aisladas en
+`D:\tools\tareapps-mobile`; cargar `. D:\tools\tareapps-mobile\env.ps1` antes de
+utilizarlas. La guía de arranque y las capturas se conservan en ese directorio,
+fuera del repositorio. No es una ruta requerida en otros equipos.
+
+**Informe local de búsqueda (#15):**
+`D:\tools\tareapps-mobile\artifacts\15-task-search\INFORME.md`.
+Incluye seis capturas del smoke test del 2026-11-05 inspeccionadas, trazabilidad
+AC49–AC52, hashes y comprobaciones automatizadas repetidas el 2026-11-06. La nueva
+pasada Android del día 6 quedó bloqueada por memoria del host; no hay capturas
+nuevas de ese intento ni aceptación nativa completa.
+
 ### Integración continua
 
 El workflow [CI](.github/workflows/ci.yml) ejecuta `npm ci`, lint, TypeScript, Jest y tests del verificador en Ubuntu/Node.js 24. Se activa en push/PR a `main` y `develop`, y manualmente. Usa caché npm del lockfile y cancela ejecuciones obsoletas: calidad tiene timeout de 15 minutos; los jobs separados `Secrets` y `Cloud experiment` tienen límites de 5 y 25 minutos.
 
-Las acciones oficiales están fijadas por SHA. CI tiene permisos de lectura, sin credenciales persistidas ni secretos de proveedor. El workflow separado de revisión puede publicar statuses, pero solo ejecuta el verificador confiable de `main`, nunca código de PR. No hay builds nativos ni despliegues. Las protecciones de ramas exigen calidad, secretos, experimento y revisión firmada. Los runners estándar son gratuitos para este repositorio público; no se modifica facturación.
+Las acciones oficiales están fijadas por SHA. CI tiene permisos de lectura, sin credenciales persistidas ni secretos de proveedor. La revisión de código se realiza localmente y solo se comenta en la PR si requiere al usuario, sin workflow de firma ni check automático de IA. No hay builds nativos ni despliegues. Las protecciones de ramas exigen calidad, secretos y experimento. Los runners estándar son gratuitos para este repositorio público; no se modifica facturación.
 
 CI activa en GitHub. [Primera ejecución real correcta en el repositorio nuevo](https://github.com/ralaindev/Tareapps/actions/runs/41199748669) el 2026-10-31, para el commit `f74ea78`: instalación desde cero, lint, TypeScript y tests aprobados en Ubuntu/Node.js 24. No equivale a una compilación nativa ni validación en dispositivo.
 
@@ -142,6 +177,11 @@ Resultados comunicados para la implementación actual:
 | Recorrer todas las pantallas con VoiceOver/TalkBack; comprobar nombres, roles, estado seleccionado y ejecución de acciones. | [ ] | [ ] | AC12 |
 
 ### Reglas complementarias
+
+- [ ] AC49–AC52: buscar por título/descripción con mayúsculas, tildes y espacios;
+  alternar vistas, comprobar contadores y vacíos, limpiar y recuperar scroll; editar
+  una coincidencia, mover, borrar/Deshacer y reiniciar. Revisar teclado, lector y texto
+  ampliado en ambas plataformas. Evidencia automatizada no equivale a validación nativa.
 
 Estas comprobaciones amplían la verificación sin modificar la correspondencia original de AC01–AC12:
 

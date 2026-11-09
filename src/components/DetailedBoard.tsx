@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Animated, FlatList, StyleSheet, View } from 'react-native';
+import { Alert, Animated, FlatList, StyleSheet, Text, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import { STATUSES, type Task } from '../features/tasks/model';
 import { useTasks } from '../features/tasks/TasksProvider';
@@ -8,11 +8,13 @@ import { BoardTabs } from './BoardTabs';
 import { EmptyColumn } from './EmptyColumn';
 import { useReducedMotion } from './Motion';
 import { TaskCard } from './TaskCard';
+import { useTheme } from '../theme/ThemeProvider';
 
 const AnimatedPager = Animated.createAnimatedComponent(PagerView);
 
 export function DetailedBoard({ bottomInset = 88 }: { bottomInset?: number }) {
-  const { tasks, busy, move, removeWithUndo, selectedColumn, setSelectedColumn, scrollMemory, creationRevision } = useTasks();
+  const { tasks, visibleTasks, searchTerm, busy, move, removeWithUndo, selectedColumn, setSelectedColumn, boardScrollMemory: scrollMemory, creationRevision } = useTasks();
+  const { colors } = useTheme();
   const [initialOffsets] = useState(() => STATUSES.map(status => ({ x: 0, y: scrollMemory.get(status) })));
   const pendingList = useRef<FlatList<Task>>(null);
   const lastCreation = useRef(creationRevision);
@@ -25,7 +27,7 @@ export function DetailedBoard({ bottomInset = 88 }: { bottomInset?: number }) {
   const onPageScroll = useMemo(() => Animated.event(
     [{ nativeEvent: { position, offset } }], { useNativeDriver: true },
   ), [position, offset]);
-  const columns = useMemo(() => STATUSES.map(status => tasks.filter(task => task.status === status)), [tasks]);
+  const columns = useMemo(() => STATUSES.map(status => visibleTasks.filter(task => task.status === status)), [visibleTasks]);
   const onCardTouch = useCallback((active: boolean) => {
     // The pager must not compete for a gesture that starts on a task card.
     pager.current?.setScrollEnabled(!active);
@@ -53,7 +55,7 @@ export function DetailedBoard({ bottomInset = 88 }: { bottomInset?: number }) {
 
   return <View style={styles.flex}>
     <BoardTabs selected={selectedColumn} counts={columns.map(column => column.length)}
-      position={position} offset={offset} onSelect={setSelectedColumn} />
+      position={position} offset={offset} onSelect={setSelectedColumn} searching={!!searchTerm} />
     <AnimatedPager ref={pager} style={styles.flex} initialPage={selectedColumn}
       offscreenPageLimit={2} overScrollMode="never" onPageScroll={onPageScroll}
       onPageScrollStateChanged={event => {
@@ -74,7 +76,10 @@ export function DetailedBoard({ bottomInset = 88 }: { bottomInset?: number }) {
           contentOffset={initialOffsets[index]} scrollEventThrottle={32}
           onScroll={event => scrollMemory.set(status, event.nativeEvent.contentOffset.y)}
           showsVerticalScrollIndicator={false}
-          ListEmptyComponent={<EmptyColumn status={status} firstUse={tasks.length === 0} />}
+          keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
+          ListEmptyComponent={searchTerm && tasks.some(task => task.status === status)
+            ? <Text style={[styles.noResults, { color: colors.muted }]}>No hay resultados para esta búsqueda en este estado.</Text>
+            : <EmptyColumn status={status} firstUse={tasks.length === 0} />}
           renderItem={({ item }) => <TaskCard task={item} busy={busy}
             onDelete={() => removeWithUndo(item.id)} onTouchActivity={onCardTouch}
             onEdit={() => router.push({ pathname: '/task', params: { id: item.id } })}
@@ -86,5 +91,6 @@ export function DetailedBoard({ bottomInset = 88 }: { bottomInset?: number }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  noResults: { padding: 24, fontSize: 16, textAlign: 'center' },
   list: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 20, flexGrow: 1 },
 });
