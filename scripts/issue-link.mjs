@@ -4,10 +4,15 @@ import { readFile } from 'node:fs/promises';
 export function issueNumbers(body) {
   const lines = (body ?? '').split(/\r?\n/);
   const numbers = [];
+  let end = 0;
   for (const line of lines) {
     const match = /^closes[ \t]+#([1-9]\d*)[ \t]*$/i.exec(line);
     if (!match) break;
     numbers.push(Number(match[1]));
+    end += 1;
+  }
+  if (/\b(?:close[sd]?|fix(?:es|ed)?|resolv(?:e|es|ed))\b/i.test(lines.slice(end).join('\n'))) {
+    throw new Error('No uses palabras de cierre de GitHub fuera del bloque inicial Closes #n.');
   }
   return [...new Set(numbers)];
 }

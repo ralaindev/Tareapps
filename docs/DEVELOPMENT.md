@@ -30,7 +30,9 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
   La primera base agrupa #2–#5 para instalar el circuito confiable coherentemente.
 - Cada PR debe comenzar su cuerpo con una línea `Closes #123` por cada issue que
   completa, sin líneas vacías entre ellas y pertenecientes a este repositorio. Las
-  referencias en otras posiciones no se cierran. La comprobación `Issue link` valida
+  comprobación rechaza las palabras de cierre de GitHub (`close`, `fix`, `resolve`
+  y sus variantes) en el resto del cuerpo, incluso en ejemplos, para evitar cierres
+  nativos inesperados al llegar a `main`. La comprobación `Issue link` valida
   su existencia y que esté abierta para PRs a `develop`. Al fusionar en `develop`,
   un workflow cierra esas issues; GitHub no lo hace de forma nativa fuera de `main`.
   En PRs de promoción a `main` se admiten issues ya cerradas. No referenciar un

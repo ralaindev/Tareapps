@@ -6,17 +6,16 @@ import { githubRequest, issueNumbers, run } from './issue-link.mjs';
 const event = (action, body, merged = false, base = 'develop') => ({ action, pull_request: { body, merged, number: 20, base: { ref: base } } });
 
 test('extrae solo líneas Closes consecutivas al inicio y elimina duplicados', () => {
-  assert.deepEqual(issueNumbers('Closes #15\ncloses #16\nCloses #15\nEjemplo Closes #17\nCloses #0'), [15, 16]);
-  assert.deepEqual(issueNumbers('Closes https://github.com/a/b/issues/1'), []);
+  assert.deepEqual(issueNumbers('Closes #15\ncloses #16\nCloses #15\nDescripción'), [15, 16]);
+  assert.throws(() => issueNumbers('Closes https://github.com/a/b/issues/1'), /palabras/);
 });
 
-test('el formato de la plantilla se reconoce y se ignora todo tras el bloque inicial', async () => {
+test('reconoce la plantilla y rechaza palabras de cierre fuera del bloque inicial', async () => {
   const template = await readFile(new URL('../.github/pull_request_template.md', import.meta.url), 'utf8');
   assert.deepEqual(issueNumbers(template.replace('Closes #NUMERO', 'Closes #123')), [123]);
-  assert.deepEqual(issueNumbers('Closes #21\nEjemplo: `\nCloses #15\n`\nCloses #22'), [21]);
-  assert.deepEqual(issueNumbers('```\nCloses #1\n```'), []);
-  assert.deepEqual(issueNumbers('Closes #3\n<pre>\nCloses #1\n</pre>'), [3]);
-  assert.deepEqual(issueNumbers('Closes #21\nComilla literal: \\`\nEjemplo: `\nCloses #15\n`'), [21]);
+  assert.throws(() => issueNumbers('Closes #21\nEjemplo: `\nCloses #15\n`'), /palabras/);
+  assert.throws(() => issueNumbers('Closes #3\n<pre>\nFixes #1\n</pre>'), /palabras/);
+  assert.throws(() => issueNumbers('Closes #21\n\nResolves #15'), /palabras/);
 });
 
 test('exige referencia y comprueba que sea una issue abierta', async () => {

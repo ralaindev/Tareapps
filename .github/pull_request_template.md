@@ -14,4 +14,4 @@ Closes #NUMERO
 
 ## Riesgos y reversión
 
-Sustituir `NUMERO` por una issue real; añadir una línea `Closes #NUMERO` por cada issue que complete esta PR. Al fusionar en `develop`, la automatización las cierra; en `main`, actúa el cierre nativo de GitHub. No incluir secretos ni claves privadas.
+Sustituir `NUMERO` por una issue real; añadir al principio una línea igual por cada issue que complete esta PR. Al fusionar en `develop`, la automatización las cierra; en `main`, actúa el cierre nativo de GitHub. No incluir secretos ni claves privadas.
