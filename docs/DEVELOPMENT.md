@@ -34,7 +34,10 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
   un workflow cierra esas issues; GitHub no lo hace de forma nativa fuera de `main`.
   En PRs de promoción a `main` se admiten issues ya cerradas. No referenciar un
   parent hasta que todas sus sub-issues estén terminadas. Si falla la automatización
-  tras el merge, comprobar el workflow y resolver las issues pendientes manualmente.
+  tras el merge, volver a ejecutar el job fallido desde GitHub Actions: se reintentan
+  fallos transitorios y se omiten issues ya cerradas. Si persiste, comprobar permisos
+  y resolver las pendientes manualmente. El propietario acepta el riesgo de editar el
+  cuerpo entre la validación y el merge; se procesa el cuerpo vigente al fusionar.
 
 ## Revisión local de código
 

@@ -3,14 +3,18 @@ import { readFile } from 'node:fs/promises';
 
 export function issueNumbers(body) {
   const lines = (body ?? '').split(/\r?\n/);
-  let fenced = false;
+  let fence = null;
   let comment = false;
   const numbers = lines.flatMap((line) => {
-    if (/^\s*(```|~~~)/.test(line)) { fenced = !fenced; return []; }
-    if (fenced) return [];
+    const marker = /^ {0,3}(`{3,}|~{3,})/.exec(line)?.[1];
+    if (fence) {
+      if (marker && marker[0] === fence[0] && marker.length >= fence.length && new RegExp(`^ {0,3}${marker[0]}{${fence.length},}\\s*$`).test(line)) fence = null;
+      return [];
+    }
+    if (marker) { fence = marker; return []; }
     if (comment) { if (line.includes('-->')) comment = false; return []; }
     if (line.includes('<!--')) { comment = !line.includes('-->'); return []; }
-    const match = /^\s*closes\s+#([1-9]\d*)\s*$/i.exec(line);
+    const match = /^ {0,3}closes[ \t]+#([1-9]\d*)[ \t]*$/i.exec(line);
     return match ? [Number(match[1])] : [];
   });
   return [...new Set(numbers)];
@@ -40,19 +44,30 @@ export async function run(event, request) {
   }
 }
 
+export async function githubRequest(repository, token, method, path, body, fetcher = fetch, pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))) {
+  let response;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      response = await fetcher(`https://api.github.com/repos/${repository}${path}`, {
+        method,
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+      });
+      if (response.ok) return response.json();
+      if (response.status !== 429 && response.status < 500) break;
+    } catch (error) {
+      if (attempt === 2) throw error;
+    }
+    if (attempt < 2) await pause(1000 * (attempt + 1));
+  }
+  throw new Error(`GitHub API ${method} ${path}: HTTP ${response?.status ?? 'sin respuesta'}`);
+}
+
 async function main() {
   const event = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, 'utf8'));
   const repository = process.env.GITHUB_REPOSITORY;
   const token = process.env.GITHUB_TOKEN;
-  const request = async (method, path, body) => {
-    const response = await fetch(`https://api.github.com/repos/${repository}${path}`, {
-      method,
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
-      ...(body ? { body: JSON.stringify(body) } : {}),
-    });
-    if (!response.ok) throw new Error(`GitHub API ${method} ${path}: HTTP ${response.status}`);
-    return response.json();
-  };
+  const request = (method, path, body) => githubRequest(repository, token, method, path, body);
   await run(event, request);
 }
 

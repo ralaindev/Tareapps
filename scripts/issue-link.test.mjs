@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { issueNumbers, run } from './issue-link.mjs';
+import { githubRequest, issueNumbers, run } from './issue-link.mjs';
 
 const event = (action, body, merged = false, base = 'develop') => ({ action, pull_request: { body, merged, number: 20, base: { ref: base } } });
 
@@ -14,6 +14,7 @@ test('el formato de la plantilla se reconoce y se ignoran ejemplos ocultos', asy
   const template = await readFile(new URL('../.github/pull_request_template.md', import.meta.url), 'utf8');
   assert.deepEqual(issueNumbers(template.replace('Closes #NUMERO', 'Closes #123')), [123]);
   assert.deepEqual(issueNumbers('```\nCloses #1\n```\n<!--\nCloses #2\n-->\nCloses #3'), [3]);
+  assert.deepEqual(issueNumbers('````\n```\nCloses #1\n~~~~\nCloses #2\n````\n    Closes #3\n Closes #4'), [4]);
 });
 
 test('exige referencia y comprueba que sea una issue abierta', async () => {
@@ -35,4 +36,32 @@ test('cierra todas las issues solo al fusionar en develop', async () => {
 
 test('permite referenciar en una promoción a main una issue ya cerrada', async () => {
   await run(event('opened', 'Closes #3', false, 'main'), async () => ({ state: 'closed' }));
+});
+
+test('una repetición tras un fallo parcial omite issues cerradas y termina las pendientes', async () => {
+  const state = new Map([[3, 'open'], [4, 'open']]);
+  let failure = true;
+  const request = async (method, path) => {
+    const id = Number(path.split('/').at(-1));
+    if (method === 'GET') return { state: state.get(id) };
+    if (id === 4 && failure) { failure = false; throw new Error('fallo temporal'); }
+    state.set(id, 'closed');
+    return { state: 'closed' };
+  };
+  const merged = event('closed', 'Closes #3\nCloses #4', true);
+  await assert.rejects(run(merged, request), /fallo temporal/);
+  assert.equal(state.get(3), 'closed');
+  assert.equal(state.get(4), 'open');
+  await run(merged, request);
+  assert.equal(state.get(4), 'closed');
+});
+
+test('reintenta fallos transitorios, pero no errores de permisos', async () => {
+  let attempts = 0;
+  const fetcher = async () => { attempts += 1; return attempts < 3 ? { ok: false, status: 503 } : { ok: true, json: async () => ({ ok: true }) }; };
+  assert.deepEqual(await githubRequest('owner/repo', 'token', 'GET', '/issues/3', undefined, fetcher, async () => {}), { ok: true });
+  assert.equal(attempts, 3);
+  attempts = 0;
+  await assert.rejects(githubRequest('owner/repo', 'token', 'GET', '/issues/3', undefined, async () => { attempts += 1; return { ok: false, status: 403 }; }, async () => {}), /HTTP 403/);
+  assert.equal(attempts, 1);
 });
