@@ -28,9 +28,13 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
   es posterior y solo tras conservar todo su contenido.
 - Cada PR puede cubrir una o varias issues explícitas; preferir una unidad independiente.
   La primera base agrupa #2–#5 para instalar el circuito confiable coherentemente.
-- `Closes` solo automatiza el cierre al integrar en la rama predeterminada (`main`).
-  Para PRs a `develop`, enlazar en Development y cerrar las issues completadas tras
-  merge; el parent se cierra cuando todas las sub-issues están verificadas, no al abrir PR.
+- Cada PR debe incluir en su cuerpo una línea `Closes #123` por cada issue que
+  completa, perteneciente a este repositorio. La comprobación `Issue link` valida
+  su existencia y que esté abierta para PRs a `develop`. Al fusionar en `develop`,
+  un workflow cierra esas issues; GitHub no lo hace de forma nativa fuera de `main`.
+  En PRs de promoción a `main` se admiten issues ya cerradas. No referenciar un
+  parent hasta que todas sus sub-issues estén terminadas. Si falla la automatización
+  tras el merge, comprobar el workflow y resolver las issues pendientes manualmente.
 
 ## Revisión local de código
 

@@ -50,6 +50,9 @@ jobs:
       - name: Signed review verifier tests
         run: node --test scripts/review/core.test.mjs
 
+      - name: Issue link tests
+        run: node --test scripts/issue-link.test.mjs
+
   secrets:
     name: Secrets
     runs-on: ubuntu-latest
