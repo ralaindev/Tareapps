@@ -4,7 +4,7 @@ Aplicación personal de tareas para **iOS y Android**, en español, con temas cl
 
 ## Documentación
 
-- [Flujo de desarrollo](docs/DEVELOPMENT.md): Project, issues/PRs, ramas y revisión local firmada.
+- [Flujo de desarrollo](docs/DEVELOPMENT.md): Project, issues/PRs, ramas y revisión local.
 - [Contrato cloud v1](docs/CLOUD_CONTRACT.md) y [experimento aislado](experiments/cloud/README.md): base de v2, no nube integrada en la app.
 
 - [SDD.md](SDD.md): comportamiento aprobado, maquetas iniciales y ampliaciones con criterios AC01–AC36.
@@ -19,7 +19,7 @@ La aplicación está implementada. Estos documentos recogen su especificación, 
 
 **Repositorio público:** [ralaindev/Tareapps](https://github.com/ralaindev/Tareapps). Se migró el historial corregido a un repositorio independiente para no publicar los commits antiguos con correo personal. Los commits usan `noreply` como autor y committer; los identificadores anteriores no son accesibles desde este repositorio. El repositorio original se conserva privado y no debe publicarse.
 
-Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. `main`/`develop` son las ramas persistentes; el trabajo parte de `develop` en ramas temporales. Hay Project, issues padre/sub-issues y revisión local firmada, descritos en la guía de desarrollo. La base SDD v2/contrato y experimento Supabase no conectan todavía la app a nube; no hay despliegues autorizados.
+Pedir a AIran: **«Lee AGENTS.md y la sección de continuación de TECH_PLAN.md. Resume el estado de GitHub y los siguientes pasos».** El nombre visible de la app sigue siendo En foco. `main`/`develop` son las ramas persistentes; el trabajo parte de `develop` en ramas temporales. Hay Project, issues padre/sub-issues y revisión local, descritos en la guía de desarrollo. La base SDD v2/contrato y experimento Supabase no conectan todavía la app a nube; no hay despliegues autorizados.
 
 ## Funcionalidades
 
@@ -92,7 +92,7 @@ Los scripts `android` e `ios` actuales invocan el servidor de Expo con la plataf
 
 El workflow [CI](.github/workflows/ci.yml) ejecuta `npm ci`, lint, TypeScript, Jest y tests del verificador en Ubuntu/Node.js 24. Se activa en push/PR a `main` y `develop`, y manualmente. Usa caché npm del lockfile y cancela ejecuciones obsoletas: calidad tiene timeout de 15 minutos; los jobs separados `Secrets` y `Cloud experiment` tienen límites de 5 y 25 minutos.
 
-Las acciones oficiales están fijadas por SHA. CI tiene permisos de lectura, sin credenciales persistidas ni secretos de proveedor. El workflow separado de revisión puede publicar statuses, pero solo ejecuta el verificador confiable de `main`, nunca código de PR. No hay builds nativos ni despliegues. Las protecciones de ramas exigen calidad, secretos, experimento y revisión firmada. Los runners estándar son gratuitos para este repositorio público; no se modifica facturación.
+Las acciones oficiales están fijadas por SHA. CI tiene permisos de lectura, sin credenciales persistidas ni secretos de proveedor. La revisión se realiza localmente y solo se comenta en la PR si requiere al usuario; no hay workflow de firma ni check automático de IA. No hay builds nativos ni despliegues. Las protecciones exigen calidad, secretos y experimento. Los runners estándar son gratuitos para este repositorio público; no se modifica facturación.
 
 CI activa en GitHub. [Primera ejecución real correcta en el repositorio nuevo](https://github.com/ralaindev/Tareapps/actions/runs/41199748669) el 2026-10-31, para el commit `f74ea78`: instalación desde cero, lint, TypeScript y tests aprobados en Ubuntu/Node.js 24. No equivale a una compilación nativa ni validación en dispositivo.
 
