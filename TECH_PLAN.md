@@ -10,7 +10,7 @@ el alcance siguiente, no para todo el roadmap:
 
 1. Project privado https://github.com/users/ralaindev/projects/1, issue padre #1 y
    sub-issues #2–#5; ramas desde `develop`, plantillas y controles de contribución.
-   `docs/DEVELOPMENT.md` define revisión local firmada, fuente confiable y límites.
+   `docs/DEVELOPMENT.md` define la revisión local y sus límites; la firma dejó de ser obligatoria por decisión posterior.
 2. Formulario con ayuda obligatoria, validación tras blur y contador de descripción;
    tests de interacción. No se rediseñan tarjetas/gestos ni se afirma prueba física.
 3. SDD v2 inicial en la sección 16 de `SDD.md` y contrato v1 en
