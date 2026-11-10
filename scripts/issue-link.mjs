@@ -2,8 +2,8 @@ import { pathToFileURL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 
 export function issueNumbers(body) {
-  if (/<(?:!--|\/?[a-z][\w:-]*(?:\s|\/?>))/i.test(body ?? '')) {
-    throw new Error('El cuerpo no admite etiquetas ni comentarios HTML; usa Markdown sin HTML.');
+  if ((body ?? '').includes('<')) {
+    throw new Error('El cuerpo no admite el carácter <; usa Markdown sin HTML.');
   }
   const lines = (body ?? '').split(/\r?\n/);
   let fence = null;
