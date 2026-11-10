@@ -1,5 +1,6 @@
+Closes #NUMERO
+
 ## Trazabilidad
-- Issue:
 - Padre:
 - Project: https://github.com/users/ralaindev/projects/1
 
@@ -13,4 +14,4 @@
 
 ## Riesgos y reversión
 
-El merge a `develop` no cierra issues automáticamente con `Closes` si `main` es la rama predeterminada. Vincular en Development y cerrar solo las issues realmente completadas tras el merge. No incluir secretos ni claves privadas.
+Sustituir `NUMERO` por una issue real; añadir al principio una línea igual por cada issue que complete esta PR. Al fusionar en `develop`, la automatización las cierra; en `main`, actúa el cierre nativo de GitHub. No incluir secretos ni claves privadas.

@@ -1,0 +1,40 @@
+name: Issue link
+
+on:
+  pull_request_target:
+    branches: [develop, main]
+    types: [opened, reopened, synchronize, edited, closed]
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  validate:
+    if: github.event.action != 'closed'
+    name: Issue link
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - run: node scripts/issue-link.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  close:
+    if: github.event.action == 'closed' && github.event.pull_request.merged && github.event.pull_request.base.ref == 'develop'
+    name: Close linked issues
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - run: node scripts/issue-link.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
