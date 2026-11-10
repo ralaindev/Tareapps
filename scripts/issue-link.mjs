@@ -2,29 +2,18 @@ import { pathToFileURL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 
 export function issueNumbers(body) {
+  if (/<(?:!--|\/?[a-z][\w:-]*(?:\s|\/?>))/i.test(body ?? '')) {
+    throw new Error('El cuerpo no admite etiquetas ni comentarios HTML; usa Markdown sin HTML.');
+  }
   const lines = (body ?? '').split(/\r?\n/);
   let fence = null;
-  let comment = false;
-  let htmlBlock = null;
   const numbers = lines.flatMap((line) => {
-    if (htmlBlock) {
-      if (new RegExp(`</${htmlBlock}\\s*>`, 'i').test(line)) htmlBlock = null;
-      return [];
-    }
     const marker = /^ {0,3}(`{3,}|~{3,})/.exec(line)?.[1];
     if (fence) {
       if (marker && marker[0] === fence[0] && marker.length >= fence.length && new RegExp(`^ {0,3}${marker[0]}{${fence.length},}\\s*$`).test(line)) fence = null;
       return [];
     }
     if (marker) { fence = marker; return []; }
-    if (comment) { if (line.includes('-->')) comment = false; return []; }
-    if (line.includes('<!--')) { comment = !line.includes('-->'); return []; }
-    const html = /^ {0,3}<([a-z][a-z0-9-]*)(?:\s|>|\/)/i.exec(line);
-    if (html) {
-      const tag = html[1].toLowerCase();
-      if (!['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'].includes(tag) && !line.includes('/>') && !new RegExp(`</${tag}\\s*>`, 'i').test(line)) htmlBlock = tag;
-      return [];
-    }
     const match = /^ {0,3}closes[ \t]+#([1-9]\d*)[ \t]*$/i.exec(line);
     return match ? [Number(match[1])] : [];
   });

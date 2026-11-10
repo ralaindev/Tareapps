@@ -38,6 +38,8 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
   fallos transitorios y se omiten issues ya cerradas. Si persiste, comprobar permisos
   y resolver las pendientes manualmente. El propietario acepta el riesgo de editar el
   cuerpo entre la validación y el merge; se procesa el cuerpo vigente al fusionar.
+  Para evitar referencias ocultas ambiguas, el cuerpo no admite etiquetas ni
+  comentarios HTML; utilizar Markdown sin HTML.
 
 ## Revisión local de código
 

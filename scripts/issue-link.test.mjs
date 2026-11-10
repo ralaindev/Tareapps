@@ -13,9 +13,10 @@ test('extrae líneas Closes y elimina duplicados, no acepta enlaces ni referenci
 test('el formato de la plantilla se reconoce y se ignoran ejemplos ocultos', async () => {
   const template = await readFile(new URL('../.github/pull_request_template.md', import.meta.url), 'utf8');
   assert.deepEqual(issueNumbers(template.replace('Closes #NUMERO', 'Closes #123')), [123]);
-  assert.deepEqual(issueNumbers('```\nCloses #1\n```\n<!--\nCloses #2\n-->\nCloses #3'), [3]);
+  assert.deepEqual(issueNumbers('```\nCloses #1\n```\nCloses #3'), [3]);
   assert.deepEqual(issueNumbers('````\n```\nCloses #1\n~~~~\nCloses #2\n````\n    Closes #3\n Closes #4'), [4]);
-  assert.deepEqual(issueNumbers('<pre>\nCloses #1\n</pre>\n<div>\nCloses #2\n</div>\nCloses #3'), [3]);
+  assert.throws(() => issueNumbers('<pre><br/>\nCloses #1\n</pre>\nCloses #2'), /HTML/);
+  assert.throws(() => issueNumbers('<!--\nCloses #1\n-->\nCloses #2'), /HTML/);
 });
 
 test('exige referencia y comprueba que sea una issue abierta', async () => {
