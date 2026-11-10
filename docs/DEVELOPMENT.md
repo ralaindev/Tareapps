@@ -20,7 +20,7 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
   independiente por tarea paralela. La issue se enlaza en la PR, no en el nombre de rama.
 - PR normal contra `develop`, issue + padre + Project enlazados. Una entrega revisada
   integra `develop` en `main` por PR, conservando `develop`.
-- Checks requeridos: **Lint, types and tests**, **Secrets** y **Cloud experiment**.
+- Checks requeridos: **Lint, types and tests**, **Secrets**, **Cloud experiment** e **Issue link**.
   Rama actualizada con la base, sin force-push ni borrado de `main`/`develop`, reglas
   aplicadas también a administradores. No usar `--admin` para saltarlas.
 - Al fusionar, GitHub borra automáticamente la rama de trabajo. Si la fuente es

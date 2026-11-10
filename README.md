@@ -92,7 +92,7 @@ Los scripts `android` e `ios` actuales invocan el servidor de Expo con la plataf
 
 El workflow [CI](.github/workflows/ci.yml) ejecuta `npm ci`, lint, TypeScript, Jest y tests del verificador en Ubuntu/Node.js 24. Se activa en push/PR a `main` y `develop`, y manualmente. Usa caché npm del lockfile y cancela ejecuciones obsoletas: calidad tiene timeout de 15 minutos; los jobs separados `Secrets` y `Cloud experiment` tienen límites de 5 y 25 minutos.
 
-Las acciones oficiales están fijadas por SHA. CI tiene permisos de lectura, sin credenciales persistidas ni secretos de proveedor. La revisión se realiza localmente y solo se comenta en la PR si requiere al usuario; no hay workflow de firma ni check automático de IA. No hay builds nativos ni despliegues. Las protecciones exigen calidad, secretos y experimento. Los runners estándar son gratuitos para este repositorio público; no se modifica facturación.
+Las acciones oficiales están fijadas por SHA. CI tiene permisos de lectura, sin credenciales persistidas ni secretos de proveedor. La revisión se realiza localmente y solo se comenta en la PR si requiere al usuario; no hay workflow de firma ni check automático de IA. No hay builds nativos ni despliegues. Las protecciones exigen calidad, secretos, experimento y vínculo de issue. Los runners estándar son gratuitos para este repositorio público; no se modifica facturación.
 
 CI activa en GitHub. [Primera ejecución real correcta en el repositorio nuevo](https://github.com/ralaindev/Tareapps/actions/runs/41199748669) el 2026-10-31, para el commit `f74ea78`: instalación desde cero, lint, TypeScript y tests aprobados en Ubuntu/Node.js 24. No equivale a una compilación nativa ni validación en dispositivo.
 
