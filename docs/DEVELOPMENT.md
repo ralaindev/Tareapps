@@ -28,8 +28,9 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
   es posterior y solo tras conservar todo su contenido.
 - Cada PR puede cubrir una o varias issues explícitas; preferir una unidad independiente.
   La primera base agrupa #2–#5 para instalar el circuito confiable coherentemente.
-- Cada PR debe incluir en su cuerpo una línea `Closes #123` por cada issue que
-  completa, perteneciente a este repositorio. La comprobación `Issue link` valida
+- Cada PR debe comenzar su cuerpo con una línea `Closes #123` por cada issue que
+  completa, sin líneas vacías entre ellas y pertenecientes a este repositorio. Las
+  referencias en otras posiciones no se cierran. La comprobación `Issue link` valida
   su existencia y que esté abierta para PRs a `develop`. Al fusionar en `develop`,
   un workflow cierra esas issues; GitHub no lo hace de forma nativa fuera de `main`.
   En PRs de promoción a `main` se admiten issues ya cerradas. No referenciar un
@@ -38,8 +39,6 @@ issues, PRs, commits y ejecuciones; no inventar issues históricas como si prece
   fallos transitorios y se omiten issues ya cerradas. Si persiste, comprobar permisos
   y resolver las pendientes manualmente. El propietario acepta el riesgo de editar el
   cuerpo entre la validación y el merge; se procesa el cuerpo vigente al fusionar.
-  Para evitar referencias ocultas ambiguas, el cuerpo no admite el carácter `<`;
-  utilizar Markdown sin HTML y evitar también ese carácter en texto normal.
 
 ## Revisión local de código
 

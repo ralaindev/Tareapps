@@ -1,5 +1,6 @@
-## Trazabilidad
 Closes #NUMERO
+
+## Trazabilidad
 - Padre:
 - Project: https://github.com/users/ralaindev/projects/1
 
