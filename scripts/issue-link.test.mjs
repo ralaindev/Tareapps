@@ -18,6 +18,7 @@ test('el formato de la plantilla se reconoce y se ignoran ejemplos ocultos', asy
   assert.throws(() => issueNumbers('<pre><br/>\nCloses #1\n</pre>\nCloses #2'), /carácter/);
   assert.throws(() => issueNumbers('<!--\nCloses #1\n-->\nCloses #2'), /carácter/);
   assert.throws(() => issueNumbers('<![CDATA[\nCloses #1\n]]>\nCloses #2'), /carácter/);
+  assert.deepEqual(issueNumbers('Closes #21\nEjemplo `\nCloses #15\n`\nCloses #22'), [21, 22]);
 });
 
 test('exige referencia y comprueba que sea una issue abierta', async () => {

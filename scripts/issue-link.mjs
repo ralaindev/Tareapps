@@ -7,13 +7,25 @@ export function issueNumbers(body) {
   }
   const lines = (body ?? '').split(/\r?\n/);
   let fence = null;
+  let inlineCode = 0;
   const numbers = lines.flatMap((line) => {
+    if (inlineCode) {
+      for (const token of line.matchAll(/`+/g)) {
+        if (!inlineCode) inlineCode = token[0].length;
+        else if (token[0].length === inlineCode) inlineCode = 0;
+      }
+      return [];
+    }
     const marker = /^ {0,3}(`{3,}|~{3,})/.exec(line)?.[1];
     if (fence) {
       if (marker && marker[0] === fence[0] && marker.length >= fence.length && new RegExp(`^ {0,3}${marker[0]}{${fence.length},}\\s*$`).test(line)) fence = null;
       return [];
     }
     if (marker) { fence = marker; return []; }
+    for (const token of line.matchAll(/`+/g)) {
+      if (!inlineCode) inlineCode = token[0].length;
+      else if (token[0].length === inlineCode) inlineCode = 0;
+    }
     const match = /^ {0,3}closes[ \t]+#([1-9]\d*)[ \t]*$/i.exec(line);
     return match ? [Number(match[1])] : [];
   });
